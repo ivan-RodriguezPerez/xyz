@@ -17,7 +17,7 @@ def generate_launch_description():
 
     robot_description = xacro.process_file(Path(os.path.join(
     get_package_share_directory('gazebo_sensors'), xacro_path)), mappings={'use_camera'
-    : "True", 'use_depth': "False", 'use_lidar': "False"})
+    : "True", 'use_depth': "True", 'use_lidar': "True"})
 
     robot_state_publisher_node = Node(
         package='robot_state_publisher',
