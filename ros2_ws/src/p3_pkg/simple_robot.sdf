@@ -1,0 +1,29 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+    <model name="simple_robot">
+        <link name="base_link">
+            <visual>
+                <geometry>
+                    <box>
+                        <size>1 1 1</size>
+                    </box>
+                </geometry>
+            </visual>
+            <collision>
+                <geometry>
+                    <box>
+                        <size>1 1 1</size>
+                    </box>
+                </geometry>
+            </collision>
+            <inertial>
+                <mass>1.0</mass>
+                <inertia>
+                    <ixx>0.083</ixx>
+                        <iyy>0.083</iyy>
+                        <izz>0.083</izz>
+                </inertia>
+            </inertial>
+        </link>
+    </model>
+</sdf>
