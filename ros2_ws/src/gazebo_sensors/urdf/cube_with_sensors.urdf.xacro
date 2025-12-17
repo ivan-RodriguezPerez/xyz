@@ -99,7 +99,7 @@
         <update_rate>90</update_rate>
         <visualize>1</visualize>
         <topic>/cube_depth/image_raw</topic>
-        <pose>0 0.0175 0.0 0-0 0</pose>
+        <pose>0 0.0175 0.0 0 0 0</pose>
         <camera name='d435'>
             <ignition_frame_id>camera_link</ignition_frame_id>
             <horizontal_fov>1.48702</horizontal_fov>
