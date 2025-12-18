@@ -20,7 +20,8 @@ IGNITION_ADD_PLUGIN(
     gz::sim::System,
     hello_world::HelloWorld::ISystemPostUpdate)
 
-void HelloWorld::PostUpdate(const gz::sim::UpdateInfo &_info,
+void hello_world::HelloWorld::PostUpdate(
+    const gz::sim::UpdateInfo &_info,
     const gz::sim::EntityComponentManager &/*_ecm*/)
 {
   std::string msg = "Hello, world! Simulation is ";
