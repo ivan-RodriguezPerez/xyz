@@ -20,9 +20,6 @@ IGNITION_ADD_PLUGIN(
     gz::sim::System,
     hello_world::HelloWorld::ISystemPostUpdate)
 
-using namespace hello_world;
-
-
 void HelloWorld::PostUpdate(const gz::sim::UpdateInfo &_info,
     const gz::sim::EntityComponentManager &/*_ecm*/)
 {
