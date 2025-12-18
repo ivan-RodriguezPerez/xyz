@@ -1,0 +1,3 @@
+/home/user/xyz/ros2_ws/src/hello_world/build/CMakeFiles/HelloWorld.dir
+/home/user/xyz/ros2_ws/src/hello_world/build/CMakeFiles/edit_cache.dir
+/home/user/xyz/ros2_ws/src/hello_world/build/CMakeFiles/rebuild_cache.dir
