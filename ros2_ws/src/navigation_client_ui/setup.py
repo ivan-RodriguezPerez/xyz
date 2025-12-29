@@ -20,7 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'nav_to_pose = navigtion_client_ui.navigate_to_pose_node:main'
+            'nav_to_pose = navigation_client_ui.navigate_to_pose_node:main'
         ],
     },
 )
