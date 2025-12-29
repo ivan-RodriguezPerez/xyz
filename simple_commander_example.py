@@ -8,11 +8,12 @@ def main():
     rclpy.init()
 
     navigator = BasicNavigator()
+    navigator.waitUntilNav2Active()
 
     goal_pose = PoseStamped()
     goal_pose.header.frame_id = 'map'
-    goal_pose.pose.position.x = 2.0
-    goal_pose.pose.position.y = 3.0
+    goal_pose.pose.position.x = -0.57
+    goal_pose.pose.position.y = -1.8
     goal_pose.pose.orientation.w = 1.0
 
     navigator.goToPose(goal_pose)
