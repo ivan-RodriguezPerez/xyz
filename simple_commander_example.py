@@ -12,7 +12,7 @@ def main():
     goal_pose = PoseStamped()
     goal_pose.header.frame_id = 'map'
     goal_pose.pose.position.x = 1.0
-    goal_pose.pose.position.y = 0.5
+    goal_pose.pose.position.y = 1.0
     goal_pose.pose.orientation.w = 1.0
 
     navigator.goToPose(goal_pose)
