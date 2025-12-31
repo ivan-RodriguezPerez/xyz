@@ -27,17 +27,15 @@ def load_waypoints(filename: str = 'waypoints.yaml') -> dict:
     return loaded_data
 
 
-def main():
-    # Inicializa el sistema ROS 2
-    rclpy.init()
-
-    navigator = BasicNavigator()
+def navigation_simple(navigator, x, y, w):
+    """
+    """
 
     goal_pose = PoseStamped()
     goal_pose.header.frame_id = 'map'
-    goal_pose.pose.position.x = 1.0
-    goal_pose.pose.position.y = 1.0
-    goal_pose.pose.orientation.w = 1.0
+    goal_pose.pose.position.x = x
+    goal_pose.pose.position.y = y
+    goal_pose.pose.orientation.w = w
 
     navigator.goToPose(goal_pose)
 
@@ -49,6 +47,48 @@ def main():
 
 
     result = navigator.getResult()
+
+    return result
+
+
+def navigation_for(navigator, waypoints):
+    """
+    """
+
+    results = {}
+
+    for idx, point in waypoints.items():
+        x_ = point[0]
+        y_ = point[1]
+        w_ = point[2]
+
+        result = navigation_simple(navigator, x_, y_, w_)
+
+        results[idx] = result
+
+def main():
+
+    NAVIGATION_TYPE = 'for'
+    # Load waypoints
+    waypoints = load_waypoints()
+
+    # Init ROS2 nd navigator
+    rclpy.init()
+    navigator = BasicNavigator()
+
+    if NAVIGATION_TYPE == 'simple':
+        x_ = waypoints[0][0]
+        y_ = waypoints[0][1]
+        w_ = waypoints[0][2]
+
+        result = navigation_simple(navigator, x_, y_, w_)
+
+    elif NAVIGATION_TYPE == 'for':
+        result = navigation_for(navigator)
+
+    else:
+        result = False
+
     if result == TaskResult.SUCCEEDED:
         print("El robot alcanzo el objetivo")
     elif result == TaskResult.CANCELED:
