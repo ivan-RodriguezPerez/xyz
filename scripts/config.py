@@ -1,0 +1,5 @@
+
+
+#NAVIGATION_TYPE = 'simple'
+NAVIGATION_TYPE = 'seq'
+#NAVIGATION_TYPE = 'random'

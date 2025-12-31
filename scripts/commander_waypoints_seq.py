@@ -3,6 +3,9 @@ from geometry_msgs.msg import PoseStamped
 import rclpy
 import time
 import yaml
+import random
+
+from config import NAVIGATION_TYPE
 
 
 def load_waypoints(filename: str = 'waypoints.yaml') -> list:
@@ -40,6 +43,18 @@ def check_result(result):
         msg = "La navegacion fallo."
 
     return msg
+
+
+def compose_overall_score(results):
+    """
+    """
+
+    total_points = len(results)
+    succeded_points = len([r for r in results.values if r == TaskResult.SUCCEEDED])
+
+    overall_score = succeded_points / total_points
+
+    return overall_score
 
 
 def navigation_simple(navigator, x, y, w):
@@ -89,11 +104,17 @@ def navigation_for(navigator, waypoints):
 
         results[idx] = result
 
+    overall_score = round(100*compose_overall_score(results), 3)
+
+    return overall_score
+
 def main():
 
-    NAVIGATION_TYPE = 'for'
     # Load waypoints
     waypoints = load_waypoints()
+
+    if NAVIGATION_TYPE == 'random':
+        random.shuffle(waypoints)
 
     # Init ROS2 nd navigator
     rclpy.init()
@@ -105,19 +126,14 @@ def main():
         w_ = waypoints[0][2]
 
         result = navigation_simple(navigator, x_, y_, w_)
+        print(f"Navigation result: {result}")
 
     elif NAVIGATION_TYPE == 'for':
-        result = navigation_for(navigator, waypoints)
+        score = navigation_for(navigator, waypoints)
+        print(f"Navigation succeed in {score}")
 
     else:
-        result = False
-
-    if result == TaskResult.SUCCEEDED:
-        print("El robot alcanzo el objetivo")
-    elif result == TaskResult.CANCELED:
-        print("La navegacion fue cancelada.")
-    else:
-        print("La navegacion fallo.")
+        pass
 
     rclpy.shutdown()
 
