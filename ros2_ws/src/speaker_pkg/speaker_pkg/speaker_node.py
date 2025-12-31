@@ -11,7 +11,7 @@ class SpeakerNode(Node):
 
         self.subscription = self.create_subscription(
             String,
-            'voice_node',
+            'speaker_topic',
             self.speak_callback,
             10
         )
