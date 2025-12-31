@@ -5,7 +5,7 @@ import time
 import yaml
 
 
-def load_waypoints(filename: str = 'waypoints.yaml') -> dict:
+def load_waypoints(filename: str = 'waypoints.yaml') -> list:
     """
     Load waypoints file containing the points the robot must explore to perform the
     navigation task. Points are composed of x, y and theta coordinates todefine the
@@ -15,7 +15,7 @@ def load_waypoints(filename: str = 'waypoints.yaml') -> dict:
         - filename (str): name of the yaml file containing the waypoints.
 
     Returns:
-        dict: navigation points contained in the yaml file.
+        list: navigation points contained in the yaml file.
     """
 
     with open(filename, 'r') as f:
@@ -23,8 +23,23 @@ def load_waypoints(filename: str = 'waypoints.yaml') -> dict:
 
     print(f"Data read from {filename}")
     print(loaded_data)
+    
+    waypoints = list(loaded_data.values())
 
-    return loaded_data
+    return waypoints
+
+
+def check_result(result):
+    """
+    """
+    if result == TaskResult.SUCCEEDED:
+        msg = "El robot alcanzo el objetivo"
+    elif result == TaskResult.CANCELED:
+        msg = "La navegacion fue cancelada."
+    else:
+        msg = "La navegacion fallo."
+
+    return msg
 
 
 def navigation_simple(navigator, x, y, w):
@@ -57,13 +72,20 @@ def navigation_for(navigator, waypoints):
 
     results = {}
 
-    for idx, point in waypoints.items():
+    for idx, point in enumerate(waypoints):
         x_ = point[0]
         y_ = point[1]
         w_ = point[2]
 
         print(f"Navigation to x: {x_}, y: {y_}, w: {w_}")
         result = navigation_simple(navigator, x_, y_, w_)
+
+        msg = check_result(result)
+
+        if result == TaskResult.SUCCEEDED:
+            print(f"The robot reached the point [x: {x_}, y: {y_}, w: {w_}]")
+        else:
+            print(msg)
 
         results[idx] = result
 
