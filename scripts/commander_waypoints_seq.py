@@ -2,6 +2,30 @@ from nav2_simple_commander.robot_navigator import BasicNavigator, TaskResult
 from geometry_msgs.msg import PoseStamped
 import rclpy
 import time
+import yaml
+
+
+def load_waypoints(filename: str = 'waypoints.yaml') -> dict:
+    """
+    Load waypoints file containing the points the robot must explore to perform the
+    navigation task. Points are composed of x, y and theta coordinates todefine the
+    position and orientation the robot must reach durint navigation.
+
+    Args:
+        - filename (str): name of the yaml file containing the waypoints.
+
+    Returns:
+        dict: navigation points contained in the yaml file.
+    """
+
+    with open(filename, 'r') as f:
+        loaded_data = yaml.safe_load(f)
+
+    print(f"Data read from {filename}")
+    print(loaded_data)
+
+    return loaded_data
+
 
 def main():
     # Inicializa el sistema ROS 2
