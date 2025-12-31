@@ -62,6 +62,7 @@ def navigation_for(navigator, waypoints):
         y_ = point[1]
         w_ = point[2]
 
+        print(f"Navigation to x: {x_}, y: {y_}, w: {w_}")
         result = navigation_simple(navigator, x_, y_, w_)
 
         results[idx] = result
@@ -84,7 +85,7 @@ def main():
         result = navigation_simple(navigator, x_, y_, w_)
 
     elif NAVIGATION_TYPE == 'for':
-        result = navigation_for(navigator)
+        result = navigation_for(navigator, waypoints)
 
     else:
         result = False
