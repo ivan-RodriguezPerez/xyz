@@ -24,10 +24,13 @@ class CommanderNode(Node):
 
         self.navigator = BasicNavigator()
 
-        self.waypoints = load_waypoints()
+        waypoints_path = "./src/commander_pkg/commander_pkg/utils/waypoints.yaml"
+        self.waypoints = load_waypoints(waypoints_path)
 
         if NAVIGATION_TYPE == 'random':
             random.shuffle(self.waypoints)
+        self.get_logger().info("Successfully created commander node")
+        time.sleep(3)
 
     def publish_message(self, msg_data):
         """
@@ -118,12 +121,14 @@ class CommanderNode(Node):
     def run(self):
 
         if NAVIGATION_TYPE == 'simple':
+            self.get_logger().info("NAVIGATION SINGLE POINT")
             x_, y_, w_ = self.waypoints[0]
 
             result = self.navigation_simple(self.navigator, x_, y_, w_, self)
             print(f"Navigation result: {result}")
 
         elif NAVIGATION_TYPE == 'for':
+            self.get_logger().info("NAVIGATION SINGLE POINT")
             score = self.navigation_for(self.navigator, self.waypoints, self)
             print(f"Navigation succeed in {score}")
 
@@ -143,8 +148,7 @@ def main(args=None):
     result = node.run()
 
     node.get_logger().info(f"Navigation finished with result: {result}")
-    
-    node.destroy_timer(node.timer)
+
     node.destroy_node()
     rclpy.shutdown()
 
