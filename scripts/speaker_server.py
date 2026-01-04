@@ -10,9 +10,16 @@ def index():
 
 @app.route('/speak', methods=['POST'])
 def speak():
-    text = request.get_json()
 
-    subprocess.run(["espeak-ng", text])
+    try:
+        text = request.get_json()
+
+        subprocess.run(["espeak-ng", text])
+
+        return 'OK'
+    
+    except Exception as e:
+        return f'ERROR: {e}'
 
 
 if __name__ == '__main__':

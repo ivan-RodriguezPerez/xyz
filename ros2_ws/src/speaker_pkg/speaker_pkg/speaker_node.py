@@ -1,6 +1,5 @@
 import rclpy
 from rclpy.node import Node
-import subprocess
 from std_msgs.msg import String
 import requests
 
