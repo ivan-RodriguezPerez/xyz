@@ -62,7 +62,7 @@ def compose_overall_score(results):
     """
 
     total_points = len(results)
-    succeded_points = len([r for r in results.values if r == TaskResult.SUCCEEDED])
+    succeded_points = len([r for r in results.values() if r == TaskResult.SUCCEEDED])
 
     overall_score = succeded_points / total_points
 
