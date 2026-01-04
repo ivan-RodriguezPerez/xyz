@@ -29,31 +29,38 @@ class CommanderNode(Node):
 
         if NAVIGATION_TYPE == 'random':
             random.shuffle(self.waypoints)
+
         self.get_logger().info("Successfully created commander node")
-        time.sleep(3)
+        time.sleep(1)
 
     def publish_message(self, msg_data):
         """
+        Function used to compose a message to be published. The function wraps the charcter string
+        string into a String interface according to the topic specifications.
+
+        Args:
+            msg_data (str): message to be published.
+
         """
 
         msg = String()
         msg.data = msg_data
         self.publisher.publish(msg)
 
-    def navigate_to_point(self, x, y, w):
+    def navigate_to_point(self, point):
         """
         Function used to send a command to the robot using a set of coordinates and orientation.
 
         Args:
-            navigator ():
-            x (float): X coordinate of the goal point.
-            y (float): Y coordinate of the goal point.
-            w (float): orientation of the robot at the goal point.
+            point (list): cartersian coordiantes of the goal point and orientation of the robot
+                at the final position in format [X, Y, W]
 
         Reurns:
             result (enum.EnumMeta): whether the navigation action was successful or not.
 
         """
+
+        x, y, w = point
 
         goal_pose = PoseStamped()
         goal_pose.header.frame_id = 'map'
@@ -81,7 +88,7 @@ class CommanderNode(Node):
 
         return result
 
-    def navigation_for(self, navigator, waypoints, node):
+    def navigation_for(self, waypoints):
         """
         Execute navigation towards a sequence of points.
 
@@ -100,11 +107,7 @@ class CommanderNode(Node):
         self.publish_message(msg)
 
         for idx, point in enumerate(waypoints):
-            x_ = point[0]
-            y_ = point[1]
-            w_ = point[2]
-
-            result = self.navigate_to_point(navigator, x_, y_, w_, node)
+            result = self.navigate_to_point(point)
 
             results[idx] = result
 
@@ -122,14 +125,13 @@ class CommanderNode(Node):
 
         if NAVIGATION_TYPE == 'simple':
             self.get_logger().info("NAVIGATION SINGLE POINT")
-            x_, y_, w_ = self.waypoints[0]
-
-            result = self.navigation_simple(self.navigator, x_, y_, w_, self)
+            point = self.waypoints[0]
+            result = self.navigate_to_point(point)
             print(f"Navigation result: {result}")
 
-        elif NAVIGATION_TYPE == 'for':
+        elif NAVIGATION_TYPE == 'seq':
             self.get_logger().info("NAVIGATION SINGLE POINT")
-            score = self.navigation_for(self.navigator, self.waypoints, self)
+            score = self.navigation_for(self.waypoints)
             print(f"Navigation succeed in {score}")
 
         elif NAVIGATION_TYPE == 'interactive':
