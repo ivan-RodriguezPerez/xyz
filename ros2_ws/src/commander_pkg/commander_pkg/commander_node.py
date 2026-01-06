@@ -22,6 +22,12 @@ class CommanderNode(Node):
             10
         )
 
+        self.publisher_planenr = self.create_publisher(
+            String,
+            'planner_topic',
+            10
+        )
+
         self.navigator = BasicNavigator()
 
         waypoints_path = "./src/commander_pkg/commander_pkg/utils/waypoints.yaml"
@@ -110,6 +116,13 @@ class CommanderNode(Node):
             result = self.navigate_to_point(point)
 
             results[idx] = result
+
+            # Cambiar de planificador local
+            # Si resultoado is not SUCCEDED -> Change scheduler
+            # Otherwise use default planner
+            if idx > 2:
+                self.
+
 
         msg = "La navegación de varios puntos ha finalizado."
         self.publish_message(msg)
