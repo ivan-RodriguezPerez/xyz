@@ -16,7 +16,7 @@ class CommanderNode(Node):
     def __init__(self):
         super().__init__('commander_node')
 
-        self.publisher = self.create_publisher(
+        self.publisher_speaker = self.create_publisher(
             String,
             'speaker_topic',
             10
@@ -51,7 +51,7 @@ class CommanderNode(Node):
 
         msg = String()
         msg.data = msg_data
-        self.publisher.publish(msg)
+        self.publisher_speaker.publish(msg)
 
     def navigate_to_point(self, point):
         """
@@ -124,12 +124,12 @@ class CommanderNode(Node):
                 self.
 
 
-        msg = "La navegación de varios puntos ha finalizado."
+        msg = "The navigation through all waypoints has finished."
         self.publish_message(msg)
 
         overall_score = round(100*compose_overall_score(results), 3)
         
-        msg = f"Se han alcanzado un {overall_score} % de los puntos definidos."
+        msg = f"The robot reached {overall_score}% of the defined waypoints."
         self.publish_message(msg)
 
         return overall_score

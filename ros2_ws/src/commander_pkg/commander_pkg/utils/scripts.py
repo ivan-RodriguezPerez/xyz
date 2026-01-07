@@ -39,11 +39,11 @@ def compose_result_msg(result, point_msg):
     """
 
     if result == TaskResult.SUCCEEDED:
-        msg = f"El robot alcanzo el objetivo {point_msg}"
+        msg = f"The robot reached the goal {point_msg}"
     elif result == TaskResult.CANCELED:
-        msg = f"La navegacion fue cancelada. El robot no pudo alcanzar el objetivo {point_msg}"
+        msg = f"The navigation was canceled. The robot could not reach the goal {point_msg}"
     else:
-        msg = f"La navegacion fallo. El robot no pudo alcanzar el objetivo {point_msg}"
+        msg = f"The navigation failed. The robot could not reach the goal {point_msg}"
 
     return msg
 
