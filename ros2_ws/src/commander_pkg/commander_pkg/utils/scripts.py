@@ -40,12 +40,15 @@ def compose_result_msg(result, point_msg):
 
     if result == TaskResult.SUCCEEDED:
         msg = f"The robot reached the goal {point_msg}"
+        state = True
     elif result == TaskResult.CANCELED:
         msg = f"The navigation was canceled. The robot could not reach the goal {point_msg}"
+        state = False
     else:
         msg = f"The navigation failed. The robot could not reach the goal {point_msg}"
+        state = False
 
-    return msg
+    return msg, state
 
 
 def compose_overall_score(results):

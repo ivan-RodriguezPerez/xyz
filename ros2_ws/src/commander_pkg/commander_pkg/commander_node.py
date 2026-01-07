@@ -121,7 +121,7 @@ class CommanderNode(Node):
             # Si resultoado is not SUCCEDED -> Change scheduler
             # Otherwise use default planner
             if idx > 2:
-                self.
+                pass
 
 
         msg = "The navigation through all waypoints has finished."
@@ -162,7 +162,7 @@ def main(args=None):
 
     result = node.run()
 
-    node.get_logger().info(f"Navigation finished with result: {result}")
+    node.get_logger().info("Navigation finished.\n")
 
     node.destroy_node()
     rclpy.shutdown()
