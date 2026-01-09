@@ -3,19 +3,39 @@ import sounddevice as sd
 import scipy.io.wavfile as wavfile
 from faster_whisper import WhisperModel
 import os
+import time
+
 
 
 AUDIO_DST_FOLDER = os.path.join(os.getcwd(), "audios")
 AUDIO_FILE = "audio.wav"
 audio_dst = os.path.join(AUDIO_DST_FOLDER, AUDIO_FILE)
 
-print(audio_dst)
 if not os.path.exists(AUDIO_DST_FOLDER):
     os.mkdir(AUDIO_DST_FOLDER)
 
 AUDIO_DURATION = 5  # [s]
 FS = 44100 # Sample rate
 DEVICE_INDEX = 1  # Microphone index
+
+MODEL_SIZE = "large"
+WHISPER_MODEL_PATH = "./whisper_model_large"
+
+if not os.path.exists(WHISPER_MODEL_PATH):
+    os.mkdir(WHISPER_MODEL_PATH)
+
+# Initalize WhisperModel
+t0 = time.time()
+model = WhisperModel(
+    model_size_or_path=MODEL_SIZE,
+    device='auto',
+    compute_type="int8",
+    local_files_only=True,
+    download_root=WHISPER_MODEL_PATH
+)
+t1 = time.time()
+loading_time = round(t1 - t0, 2)
+print(f"WhisperModel loaded successfully.\nLoading time: {loading_time} s.")
 
 
 def record_audio():    
@@ -43,29 +63,17 @@ def record_audio():
         return False
 
 
-def transcribe_audio(file_path: str, model_size: str = "tiny") -> str:
+def transcribe_audio(file_path: str) -> str:
     """
     Transcribe audio using the FasterWhisper package.
 
     Args:
         file_path (str): Path to the input file (or a file-like object), or the audio waveform.
-        model_size (str): Size of the model to use (tiny, tiny.en, base, base.en,
-            small, small.en, distil-small.en, medium, medium.en, distil-medium.en, large-v1,
-            large-v2, large-v3, large, distil-large-v2 or distil-large-v3), a path to a
-            converted model directory, or a CTranslate2-converted Whisper model ID from the HF Hub.
-            When a size or a model ID is configured, the converted model is downloaded
-            from the Hugging Face Hub.
 
     Returns:
         transcription (str): transcribed audio in string format for the provided input audio or video. 
-    """
 
-    # Initalize WhisperModel
-    model = WhisperModel(
-        model_size_or_path=model_size,
-        device='auto',
-        compute_type="float32"
-    )
+    """
 
     # Perform the transcription 
     segments, _ = model.transcribe(file_path)
@@ -109,7 +117,11 @@ def listen():
             record_OK = record_audio()
             
             if record_OK:
+                t0 = time.time()
                 transcription = transcribe_audio(file_path=audio_dst)
+                t1 = time.time()
+                
+                print(f"Transcription time: {t1 - t0}")
 
             return transcription
             
