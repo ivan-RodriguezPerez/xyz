@@ -20,7 +20,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            "llm_chat_node = llm_pkg.llm_chat_node:main"
+            "llm_chat_node = llm_pkg.llm_chat_node:main",
+            "llm_listener_node = llm_pkg.llm_listener_node:main"
         ],
     },
 )
