@@ -27,7 +27,7 @@ tools = [
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "a": {
+                    "x": {
                         "type": "int",
                         "description": "The first operand"
                     },
@@ -35,15 +35,15 @@ tools = [
                         "type": "str",
                         "description": "The operation to perform (one of '+', '-', '*', '/')"
                     },
-                    "b": {
+                    "y": {
                         "type": "int",
                         "description": "The second operand"
                     }
                 },
                 "required": [
-                    "a",
+                    "x",
                     "op",
-                    "b"
+                    "y"
                 ]
             }
         }
