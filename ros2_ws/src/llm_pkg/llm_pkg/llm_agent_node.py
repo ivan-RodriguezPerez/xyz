@@ -6,6 +6,9 @@ from llm_pkg.tools.tools_script import *
 
 
 class OllamaChat(Node):
+    """
+    ros2 topic pub /speaker_topic std_msgs/String "data: Hello LLM. we are going to work together!" --once
+    """
 
     def __init__(self):
         super().__init__('ollama_chat')
@@ -56,14 +59,14 @@ class OllamaChat(Node):
             
                 
             if( tool_name == "get_current_weather"):
-                temperature = self.get_current_weather(arguments["city"])
+                temperature = get_current_weather(arguments["city"])
                 res = "The temperature in " + arguments["city"] + " is about " + temperature
             elif( tool_name == "do_math"):
-                result = self.do_math( int(arguments['x']), arguments['op'], int(arguments['y']) )
+                result = do_math( int(arguments['x']), arguments['op'], int(arguments['y']) )
                 res = "The result of the requested operation is: " + result
 
         else:
-            res = self.generic_chat()
+            res = generic_chat()
 
         output = String()
         output.data = res
