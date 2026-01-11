@@ -2,6 +2,7 @@ from flask import Flask, request
 import sounddevice as sd
 import scipy.io.wavfile as wavfile
 from faster_whisper import WhisperModel
+import subprocess
 import os
 import time
 
@@ -38,12 +39,12 @@ loading_time = round(t1 - t0, 2)
 print(f"WhisperModel loaded successfully.\nLoading time: {loading_time} s.")
 
 
-def record_audio():    
+def record_audio(n_seconds):    
     
     try:
         print("Recording...")
         audio = sd.rec(
-            int(AUDIO_DURATION * FS),
+            int(n_seconds * FS),
             samplerate=FS,
             channels=1,
             dtype='int16',
@@ -125,23 +126,28 @@ def listen():
 
     text = request.get_json()['text']
     print(text)
-    if text == "record_command":
-        try:
-            record_OK = record_audio()
-            
-            if record_OK:
-                t0 = time.time()
-                transcription = transcribe_audio(file_path=audio_dst)
-                t1 = time.time()
-                
-                print(f"Transcription time: {t1 - t0}")
+    
+    try:
+        n_seconds = int(text)
+        print(f'"n_seconds OK"')
 
-            return transcription
-            
-        except Exception as e:
-            return f'ERROR: {e}'
+    except:
+        n_seconds = 5
+        print(f'"n_seconds NOK"')
 
-    else:
+    try:
+        record_OK = record_audio(n_seconds)
+        
+        if record_OK:
+            t0 = time.time()
+            transcription = transcribe_audio(file_path=audio_dst)
+            t1 = time.time()
+            
+            print(f"Transcription time: {t1 - t0}")
+
+        return transcription
+        
+    except Exception as e:
         return "Empty action"
 
 

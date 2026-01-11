@@ -18,7 +18,7 @@ class OllamaChat(Node):
 
         self.response_pub = self.create_publisher(
             String,
-            'response',
+            'speaker_topic',
             10
         )
 

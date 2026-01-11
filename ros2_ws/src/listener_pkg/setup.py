@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-package_name = 'commander_pkg'
+package_name = 'listener_pkg'
 
 setup(
     name=package_name,
@@ -20,8 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            "commander_node = commander_pkg.commander_node:main",
-            "orchestrator_node = commander_pkg.orchestrator_node:main",
+            "listener_node = listener_pkg.listener_node:main",
         ],
     },
 )
