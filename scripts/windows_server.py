@@ -2,6 +2,7 @@ from flask import Flask, request
 import sounddevice as sd
 import scipy.io.wavfile as wavfile
 from faster_whisper import WhisperModel
+import subprocess
 import os
 import time
 
