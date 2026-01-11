@@ -70,7 +70,7 @@ class OllamaChat(Node):
 
         output = String()
         output.data = res
-        self.resp_pub.publish(output)
+        self.response_pub.publish(output)
 
         self.get_logger().info(f"LLM answers:\n  {response}")
     
