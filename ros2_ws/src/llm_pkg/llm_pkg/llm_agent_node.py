@@ -5,7 +5,7 @@ import ollama
 from llm_pkg.tools.tools_script import *
 
 
-class OllamaChat(Node):
+class OllamaAgent(Node):
     """
     ros2 topic pub /speaker_topic std_msgs/String "data: Hello LLM. we are going to work together!" --once
     """
@@ -22,7 +22,7 @@ class OllamaChat(Node):
 
         self.response_pub = self.create_publisher(
             String,
-            'response',
+            'speaker_topic',
             10
         )
 
@@ -70,6 +70,7 @@ class OllamaChat(Node):
 
         output = String()
         output.data = res
+
         self.response_pub.publish(output)
 
         self.get_logger().info(f"LLM answers:\n  {response}")
@@ -78,7 +79,7 @@ class OllamaChat(Node):
 def main(args=None):
 
     rclpy.init(args=args)
-    node = OllamaChat()
+    node = OllamaAgent()
 
     try:
         rclpy.spin(node)
