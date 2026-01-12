@@ -22,15 +22,14 @@ class ListenerNode(Node):
         )
 
         self.url = 'http://host.docker.internal:5000/listen'
-
         self.data = {'text': ''}
 
         self.get_logger().info('Started listener node')
 
     def listen_callback(self, msg):
+
         text = msg.data
         self.get_logger().info(f'Listening to a new instruction...')
-        self.data = text
 
         # Building transcription message
         response = requests.post(self.url, json=self.data)
