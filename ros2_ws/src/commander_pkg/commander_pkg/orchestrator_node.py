@@ -154,8 +154,25 @@ class OrchestratorNode(Node):
             transcription = self.subscription_audio
 
             # 3. Think
+            llm_prompt = f"""
+            You are a robot assistant. You are working in a robotic environment and your mission is to determine
+            to correct tool to continue or stop a navigation simulation accross points. You are receiving a specific
+            transcription from the user and you must convert the user message into an action using the tools you have
+            been provided. The message from user is: {transcription}. According to this user input you must answer
+            "continue" or "stop".
+            """
+
+            llm_msg = String()
+            llm_msg.data = llm_prompt
+            self.publisher_llm.publish(llm_msg)
+
+            time.sleep(20)
+            
             # 4. Act
-            result = self.navigate_to_point(point)
+            llm_ans = self.most_recent_instruction
+            if "continue" in llm_ans:
+
+            #result = self.navigate_to_point(point)
 
             results[idx] = result
 
