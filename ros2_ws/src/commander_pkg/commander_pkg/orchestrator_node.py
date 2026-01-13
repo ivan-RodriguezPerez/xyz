@@ -62,7 +62,7 @@ class OrchestratorNode(Node):
 
         self.most_recent_instruction = text
 
-    def publish_message(self, msg_data):
+    def speak(self, msg_data):
         """
         Function used to compose a message to be published. The function wraps the charcter string
         string into a String interface according to the topic specifications.
@@ -75,6 +75,33 @@ class OrchestratorNode(Node):
         msg = String()
         msg.data = msg_data
         self.publisher_speaker.publish(msg)
+
+    def record_audio(self):
+        """
+        
+        """
+        transcription = "Continua navegando"
+
+        self.speak(transcription)
+
+        return transcription
+    
+    def think(self, transcription):
+        """
+        """
+        llm_prompt = f"""
+        You are a robot assistant. You are working in a robotic environment and your mission is to determine
+        to correct tool to continue or stop a navigation simulation accross points. You are receiving a specific
+        transcription from the user and you must convert the user message into an action using the tools you have
+        been provided. The message from user is: {transcription}. According to this user input you must answer
+        "continue" or "stop".
+        """
+
+        llm_msg = String()
+        llm_msg.data = llm_prompt
+        self.publisher_llm.publish(llm_msg)
+
+        time.sleep(20)
 
     def navigate_to_point(self, point):
         """
@@ -99,10 +126,7 @@ class OrchestratorNode(Node):
 
         # Notify message
         point_msg = f"x: {x}, y: {y}, w: {w}"
-        
-        msg = String()
-        msg.data = f"Moving robot to point {point_msg}"
-        self.publisher_speaker.publish(msg)
+        self.speak(f"Moving robot to point {point_msg}")
 
         self.navigator.goToPose(goal_pose)
 
@@ -115,10 +139,7 @@ class OrchestratorNode(Node):
         result = self.navigator.getResult()
 
         result_msg = compose_result_msg(result, point_msg)
-
-        msg = String()
-        msg.data = result_msg
-        self.publisher_speaker.publish(msg)
+        self.speak(result_msg)
 
         return result
 
@@ -137,44 +158,22 @@ class OrchestratorNode(Node):
 
         results = {}
 
-        msg = String()
-        msg.data = "Iniciando una navegación de varios puntos."
-        self.publisher_speaker.publish(msg)
+        self.speak("Iniciando una navegación de varios puntos.")
 
         for idx, point in enumerate(waypoints):
 
             # 1. Contextualiza - Speak
-            msg = String()
             x, y, w = point
-            point_msg = f"x: {x}, y: {y}, w: {w}"
-            msg.data = f"The robot is going to navigate to point {point_msg}. Do you want to continue?"
-            self.publisher_speaker.publish(msg)
+            self.speak(f"The robot is going to navigate to point x: {x}, y: {y}, w: {w}. Do you want to continue?")
 
             # 2. Receive instructions - Record audio
-            transcription = self.subscription_audio
+            transcription = self.record_audio()
 
             # 3. Think
-            llm_prompt = f"""
-            You are a robot assistant. You are working in a robotic environment and your mission is to determine
-            to correct tool to continue or stop a navigation simulation accross points. You are receiving a specific
-            transcription from the user and you must convert the user message into an action using the tools you have
-            been provided. The message from user is: {transcription}. According to this user input you must answer
-            "continue" or "stop".
-            """
-
-            llm_msg = String()
-            llm_msg.data = llm_prompt
-            self.publisher_llm.publish(llm_msg)
-
-            time.sleep(20)
+            #self.think(transcription)
             
             # 4. Act
-            llm_ans = self.most_recent_instruction
-            if "continue" in llm_ans:
-
-            #result = self.navigate_to_point(point)
-
-            results[idx] = result
+            result = self.navigate_to_point(point)
 
             # Cambiar de planificador local
             # Si resultoado is not SUCCEDED -> Change scheduler
