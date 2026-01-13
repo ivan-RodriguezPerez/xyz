@@ -20,7 +20,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            "commander_node = commander_pkg.commander_node:main"
+            "commander_node = commander_pkg.commander_node:main",
+            "orchestrator_node = commander_pkg.orchestrator_node:main",
         ],
     },
 )
