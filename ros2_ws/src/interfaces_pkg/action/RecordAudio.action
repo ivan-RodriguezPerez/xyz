@@ -1,5 +1,5 @@
 # Goal
-int64 goal_number
+int64 goal_record_seconds
 ---
 # Result
 string transcription

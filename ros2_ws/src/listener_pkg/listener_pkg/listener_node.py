@@ -1,6 +1,11 @@
 import rclpy
-from rclpy import Node
-from std_msgs.msg import String
+from rclpy.node import Node
+from rclpy.action import ActionServer, GoalResponse
+from rclpy.action.server import ServerGoalHandle
+from rclpy.executors import MultiThreadedExecutor
+
+from interfaces_pkg.action import RecordAudio
+
 import requests
 
 
@@ -8,43 +13,52 @@ class ListenerNode(Node):
     def __init__(self):
         super().__init__('listener_node')
 
-        self.subscription = self.create_subscription(
-            String,
-            'listener_topic',
-            self.listen_callback,
-            10
+        self.listen_server_ = ActionServer(
+            self,
+            RecordAudio,
+            "listen_audio",
+            goal_callback=self.goal_callback,
+            execute_callback=self.execute_callback
         )
-
-        self.publisher = self.create_publisher(
-            String,
-            'audio_input',
-            10
-        )
-
+        
         self.url = 'http://host.docker.internal:5000/listen'
         self.data = {'text': ''}
 
-        self.get_logger().info('Started listener node')
+        self.get_logger().info("Successfully started Listener Node.")
 
-    def listen_callback(self, msg):
 
-        text = msg.data
-        self.get_logger().info(f'Listening to a new instruction...')
+    def goal_callback(self, goal_request: RecordAudio.Goal):
 
-        # Building transcription message
+        self.get_logger().info(f"Received goal: {goal_request.goal_record_seconds}")
+        self.get_logger().info("Accepting the goal.")
+        
+        return GoalResponse.ACCEPT
+
+    def execute_callback(self, goal_handle: ServerGoalHandle):
+        
+        # Hadle action request
+        record_seconds = goal_handle.request.goal_record_seconds
+        self.data['text'] = str(record_seconds)
+
+        # Execute request
+        self.get_logger().info("Executing the goal")
         response = requests.post(self.url, json=self.data)
-        msg = String()
-        msg.data = response
-        self.publisher.publish(msg)
+        
+        goal_handle.succeed()
 
-        self.get_logger().info(f'Published in listener topic:\n  {response}')
+        # Compose result
+        result = RecordAudio.Result()
+        result.transcription = response.text
+
+        return result
 
 
 def main(args=None):
     rclpy.init(args=args)
     node = ListenerNode()
-    rclpy.spin(node)
-    node.destroy_node()
+    executor = MultiThreadedExecutor()
+    executor.add_node(node)
+    executor.spin()
     rclpy.shutdown()
 
 

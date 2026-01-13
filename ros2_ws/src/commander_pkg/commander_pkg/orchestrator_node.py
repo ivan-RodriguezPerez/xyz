@@ -1,7 +1,11 @@
 import rclpy
 from rclpy.node import Node
+from rclpy.action import ActionClient
+from sclpy.action.client import ClieantGoalHandle, GoalStatus
+
+from interfaces_pkg.action import RecordAudio
+
 from std_msgs.msg import String
-import random
 
 from commander_pkg.utils.scripts import load_waypoints, compose_result_msg, compose_overall_score
 from commander_pkg.utils.config import NAVIGATION_TYPE
@@ -9,7 +13,9 @@ from commander_pkg.utils.config import NAVIGATION_TYPE
 from nav2_simple_commander.robot_navigator import BasicNavigator
 
 from geometry_msgs.msg import PoseStamped
+
 import time
+import random
 
 
 class OrchestratorNode(Node):
@@ -22,10 +28,10 @@ class OrchestratorNode(Node):
             10
         )
 
-        self.publisher_listener = self.create_publisher(
-            String,
-            'listener_topic',
-            10
+        self.record_audio_client_ = ActionClient(
+            self,
+            RecordAudio,
+            "listen_audio"
         )
 
         self.publisher_llm = self.create_publisher(
@@ -34,13 +40,6 @@ class OrchestratorNode(Node):
             10
         )
 
-        self.subscription_audio = self.create_subscription(
-            String,
-            'audio_input',
-            self.audio_callback,
-            10
-        )
-        self.most_recent_instruction = None
 
         self.navigator = BasicNavigator()
 
@@ -52,15 +51,6 @@ class OrchestratorNode(Node):
 
         self.get_logger().info("Successfully created commander node")
         time.sleep(1)
-
-    def audio_callback(self, msg):
-        """
-        """
-
-        text = msg.data
-        self.get_logger().info(f'Audio message received: {text}')
-
-        self.most_recent_instruction = text
 
     def speak(self, msg_data):
         """
@@ -80,11 +70,53 @@ class OrchestratorNode(Node):
         """
         
         """
-        transcription = "Continua navegando"
 
-        self.speak(transcription)
+        self.record_audio_client_.wait_for_server()
+
+        # Compose goal
+        goal = RecordAudio.Goal()
+        goal.goal_record_seconds = 5
+
+        self.record_audio_client_.send_goal_async(
+            goal
+        ).add_done_callback(self.goal_response_callback)
+
+        transcription = self.transcription
 
         return transcription
+    
+    def goal_response_callback(self, future):
+        self.goal_handle_: ClieantGoalHandle = future.result()
+
+        if self.goal_handle_.accepted:
+            self.get_logger().info("Goal got accepted")
+            self.goal_handle_.get_result_async().add_done_callback(
+                self.goal_result_callback
+            )
+        else:
+            self.get_logger().info("Goal rejected")
+
+    def goal_result_callback(self, future):
+
+        status = future.result().status
+        result = future.result().result
+
+        if status == GoalStatus.STATUS_SUCCEEDED:
+            self.get_logger().info("Success")
+            self.transcription = result.transcription
+            self.get_logger().info(f"Result: {self.transcription}")
+
+        elif status == GoalStatus.STATUS_ABORTED:
+            self.get_logger().error("Aborted")
+            self.transcription = "Aborted"
+
+        elif status == GoalStatus.STATUS_CANCELED:
+            self.get_logger().warn("Canceled")
+            self.transcription = "Cancelled"
+        else:
+            self.transcription = None
+            pass
+
     
     def think(self, transcription):
         """
@@ -168,6 +200,7 @@ class OrchestratorNode(Node):
 
             # 2. Receive instructions - Record audio
             transcription = self.record_audio()
+            self.speak(transcription)
 
             # 3. Think
             #self.think(transcription)
