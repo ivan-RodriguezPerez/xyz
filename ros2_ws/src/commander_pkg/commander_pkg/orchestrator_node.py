@@ -2,6 +2,7 @@ import rclpy
 from rclpy.node import Node
 from rclpy.action import ActionClient
 from rclpy.action.client import ClientGoalHandle, GoalStatus
+from rclpy.executors import MultiThreadedExecutor
 
 from interfaces_pkg.action import RecordAudio
 
@@ -14,8 +15,10 @@ from nav2_simple_commander.robot_navigator import BasicNavigator
 
 from geometry_msgs.msg import PoseStamped
 
+import threading
 import time
 import random
+from threading import Event
 
 
 class OrchestratorNode(Node):
@@ -33,13 +36,14 @@ class OrchestratorNode(Node):
             RecordAudio,
             "listen_audio"
         )
+        self.transcription = ""
+        self._result_event = Event()
 
         self.publisher_llm = self.create_publisher(
             String,
             'input_request',
             10
         )
-
 
         self.navigator = BasicNavigator()
 
@@ -72,6 +76,7 @@ class OrchestratorNode(Node):
         """
 
         self.record_audio_client_.wait_for_server()
+        self._result_event.clear()
 
         # Compose goal
         goal = RecordAudio.Goal()
@@ -81,9 +86,9 @@ class OrchestratorNode(Node):
             goal
         ).add_done_callback(self.goal_response_callback)
 
-        transcription = self.transcription
+        self._result_event.wait()
 
-        return transcription
+        return self.transcription
     
     def goal_response_callback(self, future):
         self.goal_handle_: ClientGoalHandle = future.result()
@@ -111,11 +116,12 @@ class OrchestratorNode(Node):
             self.transcription = "Aborted"
 
         elif status == GoalStatus.STATUS_CANCELED:
-            self.get_logger().warn("Canceled")
+            self.get_logger().warn("Cancelled")
             self.transcription = "Cancelled"
         else:
             self.transcription = None
-            pass
+        
+        self._result_event.set()
 
     
     def think(self, transcription):
@@ -253,9 +259,12 @@ def main(args=None):
 
     node = OrchestratorNode()
 
-    result = node.run()
+    executor = MultiThreadedExecutor()
+    executor.add_node(node)
 
-    node.get_logger().info("Navigation finished.\n")
+    threading.Thread(target=node.run, daemon=True).start()
+
+    executor.spin()
 
     node.destroy_node()
     rclpy.shutdown()
