@@ -1,7 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from rclpy.action import ActionClient
-from sclpy.action.client import ClieantGoalHandle, GoalStatus
+from rclpy.action.client import ClieantGoalHandle, GoalStatus
 
 from interfaces_pkg.action import RecordAudio
 
