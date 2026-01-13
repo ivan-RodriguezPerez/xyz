@@ -1,7 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from rclpy.action import ActionClient
-from rclpy.action.client import ClieantGoalHandle, GoalStatus
+from rclpy.action.client import ClientGoalHandle, GoalStatus
 
 from interfaces_pkg.action import RecordAudio
 
@@ -86,7 +86,7 @@ class OrchestratorNode(Node):
         return transcription
     
     def goal_response_callback(self, future):
-        self.goal_handle_: ClieantGoalHandle = future.result()
+        self.goal_handle_: ClientGoalHandle = future.result()
 
         if self.goal_handle_.accepted:
             self.get_logger().info("Goal got accepted")
@@ -133,7 +133,7 @@ class OrchestratorNode(Node):
         llm_msg.data = llm_prompt
         self.publisher_llm.publish(llm_msg)
 
-        time.sleep(20)
+        #time.sleep(20)
 
     def navigate_to_point(self, point):
         """
