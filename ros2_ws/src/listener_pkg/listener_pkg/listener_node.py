@@ -58,7 +58,7 @@ class ListenerNode(Node):
         self.get_logger().info("Response received from server")
 
         # Compose result
-        response.transcription = request_response.text
+        response.transcription = str(request_response.text)
 
         return response
 
