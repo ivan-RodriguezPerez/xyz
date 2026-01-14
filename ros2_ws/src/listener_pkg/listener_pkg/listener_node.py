@@ -3,8 +3,6 @@ from rclpy.node import Node
 from interfaces_pkg.srv import RecordAudio
 from rclpy.executors import MultiThreadedExecutor
 
-from interfaces_pkg.action import RecordAudio
-
 import requests
 
 
@@ -56,7 +54,7 @@ class ListenerNode(Node):
 
         # Execute request
         self.get_logger().info("Sending request...")
-        response = request.post(self.url, json=self.data)
+        response = requests.post(self.url, json=self.data)
 
         # Compose result
         response.transcription = response.text
