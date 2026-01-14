@@ -178,6 +178,7 @@ class OrchestratorNode(Node):
             self.record_audio()
 
             while self.transcription == "":
+                self.get_logger().info("Waiting for response...")
                 time.sleep(1)
 
             self.speak(self.transcription)
