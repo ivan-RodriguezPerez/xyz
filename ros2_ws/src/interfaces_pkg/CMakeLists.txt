@@ -15,7 +15,7 @@ find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/RecordAudio.srv"
-  "action/RecordAudio.action"
+  "action/RecordAudioAction.action"
 )
 
 if(BUILD_TESTING)
