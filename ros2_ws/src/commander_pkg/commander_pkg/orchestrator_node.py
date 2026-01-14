@@ -11,7 +11,6 @@ from nav2_simple_commander.robot_navigator import BasicNavigator
 
 from geometry_msgs.msg import PoseStamped
 
-import threading
 import time
 import random
 from threading import Event
@@ -33,6 +32,7 @@ class OrchestratorNode(Node):
         )
 
         self.transcription = ""
+        self.transcription_event = Event()
 
         self.publisher_llm = self.create_publisher(
             String,
@@ -83,17 +83,14 @@ class OrchestratorNode(Node):
         future.add_done_callback(self.callback_record_audio_response)
     
     def callback_record_audio_response(self, future):
-        """
-        """
-
         try:
             response = future.result()
             self.transcription = response.transcription
-
+            self.transcription_event.set()
             self.get_logger().info(f"Transcription received: {self.transcription}")
-
         except Exception as e:
-            self.transcription = "Continue with Record Audio error."
+            self.transcription = "error"
+            self.transcription_event.set()
             self.get_logger().error(f"Service call failed: {e}")
 
     def think(self, transcription):
@@ -179,12 +176,15 @@ class OrchestratorNode(Node):
             # 2. Receive instructions - Record audio
             self.record_audio()
 
-            while self.transcription == "":
-                self.get_logger().info("Waiting for response...")
-                time.sleep(1)
+            self.transcription = ""
+            self.transcription_event.clear()
+            self.record_audio()
+
+            while not self.transcription_event.is_set():
+                rclpy.spin_once(self, timeout_sec=0.1)
 
             self.speak(self.transcription)
-            self.transcription = ""
+            
 
             # 3. Think
             #self.think(transcription)
@@ -233,17 +233,10 @@ class OrchestratorNode(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-
     node = OrchestratorNode()
 
     try:
         node.run()
-
-        while rclpy.ok():
-            rclpy.spin_once(node, timeout_sec=0.1)
-            if node.transcription != "":
-                break
-
     finally:
         node.destroy_node()
         rclpy.shutdown()
