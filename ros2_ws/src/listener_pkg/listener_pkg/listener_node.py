@@ -55,6 +55,7 @@ class ListenerNode(Node):
         # Execute request
         self.get_logger().info("Sending request...")
         response = requests.post(self.url, json=self.data)
+        self.get_logger().info("Response received from server")
 
         # Compose result
         response.transcription = response.text
