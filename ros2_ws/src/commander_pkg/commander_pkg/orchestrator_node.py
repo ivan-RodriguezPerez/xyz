@@ -87,8 +87,10 @@ class OrchestratorNode(Node):
         """
 
         try:
-            self.transcription = future.result()
-            self.get_logger().info(f"Transcription received: {transcription}")
+            response = future.result()
+            self.transcription = response.transcription
+
+            self.get_logger().info(f"Transcription received: {self.transcription}")
 
         except Exception as e:
             self.transcription = "Continue with Record Audio error."
@@ -182,7 +184,7 @@ class OrchestratorNode(Node):
                 time.sleep(1)
 
             self.speak(self.transcription)
-            self.transcription == ""
+            self.transcription = ""
 
             # 3. Think
             #self.think(transcription)
@@ -230,14 +232,19 @@ class OrchestratorNode(Node):
 
 
 def main(args=None):
-
     rclpy.init(args=args)
 
     node = OrchestratorNode()
 
     try:
         node.run()
-    except:
+
+        while rclpy.ok():
+            rclpy.spin_once(node, timeout_sec=0.1)
+            if node.transcription != "":
+                break
+
+    finally:
         node.destroy_node()
         rclpy.shutdown()
 
