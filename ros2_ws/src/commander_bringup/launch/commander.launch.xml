@@ -1,4 +1,5 @@
 <launch>
+    <node pkg="slistener_pkg" exec="listener_node"/>
     <node pkg="speaker_pkg" exec="speaker_node"/>
     <node pkg="commander_pkg" exec="orchestrator_node"/>
 </launch>
