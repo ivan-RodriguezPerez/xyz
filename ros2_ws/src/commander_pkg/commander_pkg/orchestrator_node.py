@@ -174,8 +174,6 @@ class OrchestratorNode(Node):
             self.speak(f"The robot is going to navigate to point x: {x}, y: {y}, w: {w}. Do you want to continue?")
 
             # 2. Receive instructions - Record audio
-            self.record_audio()
-
             self.transcription = ""
             self.transcription_event.clear()
             self.record_audio()
