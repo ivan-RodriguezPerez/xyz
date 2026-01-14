@@ -1,6 +1,5 @@
 import rclpy
 from rclpy.node import Node
-from rclpy.executors import MultiThreadedExecutor
 
 from interfaces_pkg.srv import RecordAudio
 from std_msgs.msg import String
@@ -228,14 +227,11 @@ def main(args=None):
 
     node = OrchestratorNode()
 
-    executor = MultiThreadedExecutor()
-    executor.add_node(node)
-
-    executor.spin()
-
-    node.destroy_node()
-    rclpy.shutdown()
-
+    try:
+        node.run()
+    except:
+        node.destroy_node()
+        rclpy.shutdown()
 
 if __name__ == "__main__":
     main()
