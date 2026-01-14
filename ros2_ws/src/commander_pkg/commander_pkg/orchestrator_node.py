@@ -80,17 +80,19 @@ class OrchestratorNode(Node):
 
         # Make request
         future = self.record_audio_client_.call_async(request)
-        rclpy.spin_until_future_complete(self, future)
+        future.add_done_callback(self.callback_record_audio_response)
+    
+    def callback_record_audio_response(self, future):
+        """
+        """
 
         try:
-            transcription = future.result()
+            self.transcription = future.result()
             self.get_logger().info(f"Transcription received: {transcription}")
 
         except Exception as e:
-            transcription = "Continue with Record Audio error."
+            self.transcription = "Continue with Record Audio error."
             self.get_logger().error(f"Service call failed: {e}")
-            
-        return transcription
 
     def think(self, transcription):
         """
@@ -173,8 +175,13 @@ class OrchestratorNode(Node):
             self.speak(f"The robot is going to navigate to point x: {x}, y: {y}, w: {w}. Do you want to continue?")
 
             # 2. Receive instructions - Record audio
-            transcription = self.record_audio()
-            self.speak(transcription)
+            self.record_audio()
+
+            while self.transcription == "":
+                time.sleep(1)
+
+            self.speak(self.transcription)
+            self.transcription == ""
 
             # 3. Think
             #self.think(transcription)
