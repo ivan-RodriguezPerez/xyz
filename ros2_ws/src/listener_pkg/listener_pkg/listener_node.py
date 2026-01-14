@@ -1,7 +1,6 @@
 import rclpy
 from rclpy.node import Node
-from rclpy.action import ActionServer, GoalResponse
-from rclpy.action.server import ServerGoalHandle
+from interfaces_pkg.srv import RecordAudio
 from rclpy.executors import MultiThreadedExecutor
 
 from interfaces_pkg.action import RecordAudio
@@ -13,45 +12,56 @@ class ListenerNode(Node):
     def __init__(self):
         super().__init__('listener_node')
 
-        self.listen_server_ = ActionServer(
-            self,
+        self.listen_server_ = self.create_service(
             RecordAudio,
             "listen_audio",
-            goal_callback=self.goal_callback,
-            execute_callback=self.execute_callback
+            self.callback_record_audio
         )
         
         self.url = 'http://host.docker.internal:5000/listen'
         self.data = {'text': ''}
 
         self.get_logger().info("Successfully started Listener Node.")
+    
+    def callback_record_audio(
+        self,
+        request: RecordAudio.Request,
+        response: RecordAudio.Response
+    ):
+        """
+        Service callback that triggers audio recording on the host machine and
+        returns the speech transcription.
 
+        This callback sends a request to an external HTTP server running on the
+        host system (Windows). The server records audio from the laptop microphone
+        for the requested duration, performs speech-to-text transcription, and
+        returns the resulting text to the ROS 2 client via this service response.
 
-    def goal_callback(self, goal_request: RecordAudio.Goal):
+        Args:
+            request (RecordAudio.Request):
+                Service request containing the desired audio recording duration
+                in seconds.
+            response (RecordAudio.Response):
+                Service response populated with the transcribed text obtained
+                from the external recording server.
 
-        self.get_logger().info(f"Received goal: {goal_request.goal_record_seconds}")
-        self.get_logger().info("Accepting the goal.")
-        
-        return GoalResponse.ACCEPT
+        Returns:
+            RecordAudio.Response:
+                The service response containing the speech transcription.
+        """
 
-    def execute_callback(self, goal_handle: ServerGoalHandle):
-        
-        # Hadle action request
-        record_seconds = goal_handle.request.goal_record_seconds
-        self.data['text'] = str(record_seconds)
+        # Handle request
+        record_seconds = request.request_record_seconds
+        self.data["text"] = str(record_seconds)
 
         # Execute request
-        self.get_logger().info("Executing the goal")
-        response = requests.post(self.url, json=self.data)
-        
-        goal_handle.succeed()
+        self.get_logger().info("Sending request...")
+        response = request.post(self.url, json=self.data)
 
         # Compose result
-        result = RecordAudio.Result()
-        result.transcription = response.text
+        response.transcription = response.text
 
-        return result
-
+        return response
 
 def main(args=None):
     rclpy.init(args=args)
