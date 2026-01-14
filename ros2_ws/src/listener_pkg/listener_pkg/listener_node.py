@@ -51,7 +51,7 @@ class ListenerNode(Node):
         """
 
         # Handle request
-        record_seconds = request.request_record_seconds
+        record_seconds = request.record_seconds
         self.data["text"] = str(record_seconds)
 
         # Execute request

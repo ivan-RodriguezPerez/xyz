@@ -1,11 +1,8 @@
 import rclpy
 from rclpy.node import Node
-from rclpy.action import ActionClient
-from rclpy.action.client import ClientGoalHandle, GoalStatus
 from rclpy.executors import MultiThreadedExecutor
 
-from interfaces_pkg.action import RecordAudio
-
+from interfaces_pkg.srv import RecordAudio
 from std_msgs.msg import String
 
 from commander_pkg.utils.scripts import load_waypoints, compose_result_msg, compose_overall_score
@@ -31,13 +28,12 @@ class OrchestratorNode(Node):
             10
         )
 
-        self.record_audio_client_ = ActionClient(
-            self,
+        self.record_audio_client_ = self.create_client(
             RecordAudio,
-            "listen_audio"
+            "listen_audio",
         )
+
         self.transcription = ""
-        self._result_event = Event()
 
         self.publisher_llm = self.create_publisher(
             String,
@@ -70,60 +66,33 @@ class OrchestratorNode(Node):
         msg.data = msg_data
         self.publisher_speaker.publish(msg)
 
-    def record_audio(self):
+    def record_audio(self, record_seconds: int = 5):
         """
-        
+        Sends an asynchronous request to the RecordAudio service.
         """
 
-        self.record_audio_client_.wait_for_server()
-        self._result_event.clear()
+        # Wait until service is running
+        while not self.record_audio_client_.wait_for_service(1.0):
+            self.get_logger().warn("Waiting for service...")
 
-        # Compose goal
-        goal = RecordAudio.Goal()
-        goal.goal_record_seconds = 5
+        # Compose request
+        request = RecordAudio.Request()
+        request.record_seconds = record_seconds
 
-        self.record_audio_client_.send_goal_async(
-            goal
-        ).add_done_callback(self.goal_response_callback)
+        # Make request
+        future = self.record_audio_client_.call_async(request)
+        rclpy.spin_until_future_complete(self, future)
 
-        self._result_event.wait()
+        try:
+            transcription = future.result()
+            self.get_logger().info(f"Transcription received: {transcription}")
 
-        return self.transcription
-    
-    def goal_response_callback(self, future):
-        self.goal_handle_: ClientGoalHandle = future.result()
+        except Exception as e:
+            transcription = "Continue with Record Audio error."
+            self.get_logger().error(f"Service call failed: {e}")
+            
+        return transcription
 
-        if self.goal_handle_.accepted:
-            self.get_logger().info("Goal got accepted")
-            self.goal_handle_.get_result_async().add_done_callback(
-                self.goal_result_callback
-            )
-        else:
-            self.get_logger().info("Goal rejected")
-
-    def goal_result_callback(self, future):
-
-        status = future.result().status
-        result = future.result().result
-
-        if status == GoalStatus.STATUS_SUCCEEDED:
-            self.get_logger().info("Success")
-            self.transcription = result.transcription
-            self.get_logger().info(f"Result: {self.transcription}")
-
-        elif status == GoalStatus.STATUS_ABORTED:
-            self.get_logger().error("Aborted")
-            self.transcription = "Aborted"
-
-        elif status == GoalStatus.STATUS_CANCELED:
-            self.get_logger().warn("Cancelled")
-            self.transcription = "Cancelled"
-        else:
-            self.transcription = None
-        
-        self._result_event.set()
-
-    
     def think(self, transcription):
         """
         """
@@ -261,8 +230,6 @@ def main(args=None):
 
     executor = MultiThreadedExecutor()
     executor.add_node(node)
-
-    threading.Thread(target=node.run, daemon=True).start()
 
     executor.spin()
 
