@@ -1,0 +1,5 @@
+# Request
+int64 request_record_seconds
+---
+# Response
+string transcription
