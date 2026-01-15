@@ -142,6 +142,56 @@ class OrchestratorNode(Node):
 
         time.sleep(20)
 
+    def think_manual(self, transcription):
+
+        # Actions
+        continuar_words = ["continua", "continue", "sigue", "Continúa", "ontin"]
+        go_back_words = ["previo", "anterior", "vuelve"]
+        stop_words = ["stop", "para", "detén", "deten", "Stop", "Para", "Detén", "Deten"]
+        change_planner_words = ["planner", "planer", "cambia", "cambio", "Cambia", "Cambio", "planif"]
+
+        check_action = lambda list_words: any(map(transcription.__contains__, list_words))
+
+        # 1. Continue
+        if check_action(continuar_words):
+            action = "continuar"
+        # 2. Go to previous point
+        elif check_action(go_back_words):
+            action = "go_back"
+        # 3. Stop navigation
+        elif check_action(stop_words):
+            action = "stop"
+        # 4. Change planner
+        elif check_action(change_planner_words):
+            action = "change_planner"
+        else:
+            action = "continue"
+
+        return action
+
+    def act(self, action, point, prev_point):
+
+        if action == "continuar":
+            result = self.navigate_to_point(point)
+
+        elif action == "go_back":
+            result = self.navigate_to_point(prev_point)
+
+        elif action == "stop":
+            result = self.stop_navigation()
+            result = self.navigate_to_point(point)
+
+        elif action == "change_planner":
+            result = self.change_planner()
+            result = self.navigate_to_point(point)
+
+        elif action == "change_controller":
+            result = self.change_controller()
+            result = self.navigate_to_point(point)
+
+        else:
+            result = self.navigate_to_point(point)
+
     def navigate_to_point(self, point):
         """
         Function used to send a command to the robot using a set of coordinates and orientation.
@@ -181,6 +231,15 @@ class OrchestratorNode(Node):
         self.speak(result_msg)
 
         return result
+    
+    def stop_navigation(self):    
+        self.speak("Callback para stop navigation")
+
+    def change_planner(self):
+        self.speak("Callacbk para cambiar el planificador")
+
+    def change_controller(self):
+        self.speak("Callacbk para cambiar el controlador")
 
     def navigation_for(self, waypoints):
         """
@@ -199,11 +258,13 @@ class OrchestratorNode(Node):
 
         self.speak("Iniciando una navegación de varios puntos.")
 
+        prev_point = [0, 0, 0]
+
         for idx, point in enumerate(waypoints):
 
             # 1. Contextualiza - Speak
             #x, y, w = point
-            self.speak(f"The robot is going to navigate to a new scheduled point. Do you want to continue?", 6)
+            self.speak(f"Moviendose al siguiente punto. Going to navigate to a new scheduled point. Do you want to continue?", 6)
 
             # 2. Receive instructions - Record audio
             transcription = self.record_audio()
@@ -211,16 +272,13 @@ class OrchestratorNode(Node):
 
             # 3. Think
             #self.think(transcription)
-            
+            action = self.think_manual(transcription)
+            self.speak(f"Acción elegida: {action}")
+            time.sleep(10)
+
             # 4. Act
-            result = self.navigate_to_point(point)
-
-            # Cambiar de planificador local
-            # Si resultoado is not SUCCEDED -> Change scheduler
-            # Otherwise use default planner
-            if idx > 2:
-                pass
-
+            self.act(action, point, prev_point)
+            prev_point = point
 
         msg = String()
         msg.data = "The navigation through all waypoints has finished."
