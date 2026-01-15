@@ -109,7 +109,7 @@ class OrchestratorNode(Node):
         if status == GoalStatus.STATUS_SUCCEEDED:
             self.get_logger().info("Success")
             self.transcription = result.transcription
-            self.get_logger().info(f"Result: {self.transcription}")
+            self.get_logger().info(f"Transcription received: {self.transcription}")
 
         elif status == GoalStatus.STATUS_ABORTED:
             self.get_logger().error("Aborted")
@@ -206,6 +206,8 @@ class OrchestratorNode(Node):
 
             # 2. Receive instructions - Record audio
             transcription = self.record_audio()
+
+            time.sleep(2)
             self.speak(transcription)
 
             # 3. Think
