@@ -203,11 +203,10 @@ class OrchestratorNode(Node):
             # 1. Contextualiza - Speak
             x, y, w = point
             self.speak(f"The robot is going to navigate to point x: {x}, y: {y}, w: {w}. Do you want to continue?")
+            time.sleep(5)
 
             # 2. Receive instructions - Record audio
             transcription = self.record_audio()
-
-            time.sleep(2)
             self.speak(transcription)
 
             # 3. Think
