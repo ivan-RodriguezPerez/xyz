@@ -2,10 +2,9 @@ from flask import Flask, request
 import sounddevice as sd
 import scipy.io.wavfile as wavfile
 from faster_whisper import WhisperModel
-import subprocess
 import os
 import time
-
+import pyttsx3
 
 
 AUDIO_DST_FOLDER = os.path.join(os.getcwd(), "audios")
@@ -114,7 +113,9 @@ def speak():
     try:
         text = request.get_json()
 
-        subprocess.run(["espeak-ng", text])
+        engine = pyttsx3.init()
+        engine.say(text)
+        engine.runAndWait()
 
         return 'OK'
     
@@ -126,7 +127,6 @@ def listen():
 
     text = request.get_json()['text']
     print(text)
-    
     try:
         n_seconds = int(text)
         print(f'"n_seconds OK"')
