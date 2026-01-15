@@ -140,7 +140,7 @@ class OrchestratorNode(Node):
         llm_msg.data = llm_prompt
         self.publisher_llm.publish(llm_msg)
 
-        #time.sleep(20)
+        time.sleep(20)
 
     def navigate_to_point(self, point):
         """

@@ -2,4 +2,5 @@
     <node pkg="listener_pkg" exec="listener_node"/>
     <node pkg="speaker_pkg" exec="speaker_node"/>
     <node pkg="commander_pkg" exec="orchestrator_node"/>
+    <node pkg="llm_pkg" exec="llm_chat_node"/>
 </launch>
