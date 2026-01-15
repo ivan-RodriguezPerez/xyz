@@ -56,7 +56,7 @@ class OrchestratorNode(Node):
         self.get_logger().info("Successfully created commander node")
         time.sleep(1)
 
-    def speak(self, msg_data):
+    def speak(self, msg_data, sleep_time=5):
         """
         Function used to compose a message to be published. The function wraps the charcter string
         string into a String interface according to the topic specifications.
@@ -69,6 +69,7 @@ class OrchestratorNode(Node):
         msg = String()
         msg.data = msg_data
         self.publisher_speaker.publish(msg)
+        time.sleep(sleep_time)
 
     def record_audio(self):
         """
@@ -201,9 +202,8 @@ class OrchestratorNode(Node):
         for idx, point in enumerate(waypoints):
 
             # 1. Contextualiza - Speak
-            x, y, w = point
-            self.speak(f"The robot is going to navigate to point x: {x}, y: {y}, w: {w}. Do you want to continue?")
-            time.sleep(5)
+            #x, y, w = point
+            self.speak(f"The robot is going to navigate to a new scheduled point. Do you want to continue?", 6)
 
             # 2. Receive instructions - Record audio
             transcription = self.record_audio()
