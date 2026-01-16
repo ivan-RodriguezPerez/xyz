@@ -225,14 +225,14 @@ class OrchestratorNode(Node):
 
         # Notify message
         point_msg = f"x: {x}, y: {y}, w: {w}"
-        self.speak(f"Moving robot to point {point_msg}")
+        self.speak(f"Moving to point {point_msg}")
 
         self.navigator.goToPose(goal_pose)
 
         while not self.navigator.isTaskComplete():
             feedback = self.navigator.getFeedback()
             if feedback:
-                self.get_logger().info(f"Distancia restante al objetivo: {feedback.distance_remaining}")
+                self.get_logger().info(f"Remaining distance: {feedback.distance_remaining}")
             time.sleep(1)
 
         result = self.navigator.getResult()
@@ -243,10 +243,10 @@ class OrchestratorNode(Node):
         return result
     
     def stop_navigation(self):    
-        self.speak("Callback para stop navigation")
+        self.speak("Stopping navigation")
 
     def change_planner(self, planner_name):
-        self.speak("Callack para cambiar el planificador")
+        self.speak("Changing planner")
 
         req = SetParameters.Request()
 
@@ -270,7 +270,7 @@ class OrchestratorNode(Node):
             self.get_logger().error(f"Error changing planner")
             
     def change_controller(self):
-        self.speak("Callacbk para cambiar el controlador")
+        self.speak("Changing controller")
 
     def navigation_for(self, waypoints):
         """
@@ -287,7 +287,7 @@ class OrchestratorNode(Node):
 
         results = {}
 
-        self.speak("Iniciando una navegación de varios puntos.")
+        self.speak("Starting navigation.")
 
         prev_point = [0, 0, 0]
 
@@ -295,7 +295,7 @@ class OrchestratorNode(Node):
 
             # 1. Contextualiza - Speak
             #x, y, w = point
-            self.speak(f"Moviendose al siguiente punto. Going to navigate to a new scheduled point. Do you want to continue?", 6)
+            self.speak(f"Going to a new scheduled point. Do you want to continue?", 6)
 
             # 2. Receive instructions - Record audio
             transcription = self.record_audio()

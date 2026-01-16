@@ -42,6 +42,8 @@ def record_audio(n_seconds):
     
     try:
         print("Recording...")
+        time.sleep(1)
+
         audio = sd.rec(
             int(n_seconds * FS),
             samplerate=FS,
@@ -97,7 +99,7 @@ def transcribe_audio(file_path: str) -> str:
 
     # Format text setting the first letter as capital
     transcription = transcription.capitalize()
-
+    print(f"\n{transcription}\n")
     return transcription
 
 
