@@ -49,7 +49,9 @@ class OrchestratorNode(Node):
         )
 
         # Change Planner client
-        self.planner_name = "GridBased"
+        self.planner_name = "Navfn"
+        self.all_planners = ["Navfn", "Smac2D", "Hybrid", "Lattice"]
+
         self.cli = self.create_client(SetParameters, '/planner_server/set_parameters')
         while not self.cli.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('Esperando a que el servicio de set_parameters este disponible...')
@@ -191,8 +193,7 @@ class OrchestratorNode(Node):
             result = self.navigate_to_point(point)
 
         elif action == "change_planner":
-            planner_name = "GridBased" if self.planner_name == "SmacPlanner" else "SmacPlanner"
-            result = self.change_planner(planner_name)
+            result = self.change_planner()
             result = self.navigate_to_point(point)
 
         elif action == "change_controller":
@@ -245,15 +246,19 @@ class OrchestratorNode(Node):
     def stop_navigation(self):    
         self.speak("Stopping navigation")
 
-    def change_planner(self, planner_name):
-        self.speak("Changing planner")
+    def change_planner(self):
+        
+        prev_planner = self.planner_name
+        self.planner_policy()
+
+        self.speak(f"Changing planner from {prev_planner} to {self.planner}")
 
         req = SetParameters.Request()
 
         # Define new planner parameter
         param = Parameter()
         param.name = "planner_id"
-        param.value = ParameterValue(type=ParameterType.PARAMETER_STRING, string_value=planner_name)
+        param.value = ParameterValue(type=ParameterType.PARAMETER_STRING, string_value=self.planner_name)
 
         # Add parameter to request
         req.parameters = [param]
@@ -263,12 +268,23 @@ class OrchestratorNode(Node):
         rclpy.spin_until_future_complete(self, future)
 
         if future.result() is not None:
-            self.get_logger().info(f"Planner changed to {planner_name}")
-            self.planner_name = "GridBased" if planner_name == "SmacPlanner" else "SmacPlanner"
+            self.get_logger().info(f"Planner changed to {self.planner_name}")
 
         else:
             self.get_logger().error(f"Error changing planner")
+
+    def planner_policy(self):
+        """
+        Change planner randomly
+        """
+
+        new_planner = self.planner_name
+
+        while new_planner == self.planner_name:
+            new_planner = random.sample(self.all_planners, 1)[0]
             
+        self.planner_name = new_planner
+
     def change_controller(self):
         self.speak("Changing controller")
 
