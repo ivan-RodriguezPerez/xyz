@@ -49,6 +49,7 @@ class OrchestratorNode(Node):
         )
 
         # Change Planner client
+        self.planner_name = "GridBased"
         self.cli = self.create_client(SetParameters, '/planner_server/set_parameters')
         while not self.cli.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('Esperando a que el servicio de set_parameters este disponible...')
