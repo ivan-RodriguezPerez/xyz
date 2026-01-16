@@ -174,7 +174,7 @@ class OrchestratorNode(Node):
             action = "stop"
         # 4. Change planner
         elif check_action(change_planner_words):
-            action = "change_planner"
+            action = "change planner"
         else:
             action = "continue"
 
@@ -320,8 +320,8 @@ class OrchestratorNode(Node):
             # 3. Think
             #self.think(transcription)
             action = self.think_manual(transcription)
+            action = "change planner"
             self.speak(f"Acción elegida: {action}")
-            time.sleep(10)
 
             # 4. Act
             self.act(action, point, prev_point)
