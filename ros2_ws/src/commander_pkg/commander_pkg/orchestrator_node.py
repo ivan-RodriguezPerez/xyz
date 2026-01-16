@@ -4,6 +4,9 @@ from rclpy.action import ActionClient
 from rclpy.action.client import ClientGoalHandle, GoalStatus
 from rclpy.executors import MultiThreadedExecutor
 
+from rcl_interfaces.srv import SetParameters
+from rcl_interfaces.msg import Parameter, ParameterType, ParameterValue
+
 from interfaces_pkg.action import RecordAudio
 
 from std_msgs.msg import String
@@ -44,6 +47,11 @@ class OrchestratorNode(Node):
             'input_request',
             10
         )
+
+        # Change Planner client
+        self.cli = self.create_client(SetParameters, '/planner_server/set_parameters')
+        while not self.cli.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info('Esperando a que el servicio de set_parameters este disponible...')
 
         self.navigator = BasicNavigator()
 
@@ -182,7 +190,8 @@ class OrchestratorNode(Node):
             result = self.navigate_to_point(point)
 
         elif action == "change_planner":
-            result = self.change_planner()
+            planner_name = "GridBased" if self.planner_name == "SmacPlanner" else "SmacPlanner"
+            result = self.change_planner(planner_name)
             result = self.navigate_to_point(point)
 
         elif action == "change_controller":
@@ -235,9 +244,30 @@ class OrchestratorNode(Node):
     def stop_navigation(self):    
         self.speak("Callback para stop navigation")
 
-    def change_planner(self):
-        self.speak("Callacbk para cambiar el planificador")
+    def change_planner(self, planner_name):
+        self.speak("Callack para cambiar el planificador")
 
+        req = SetParameters.Request()
+
+        # Define new planner parameter
+        param = Parameter()
+        param.name = "planner_id"
+        param.value = ParameterValue(type=ParameterType.PARAMETER_STRING, string_value=planner_name)
+
+        # Add parameter to request
+        req.parameters = [param]
+
+        # Call service for changing planner
+        future = self.cli.call_async(req)
+        rclpy.spin_until_future_complete(self, future)
+
+        if future.result() is not None:
+            self.get_logger().info(f"Planner changed to {planner_name}")
+            self.planner_name = "GridBased" if planner_name == "SmacPlanner" else "SmacPlanner"
+
+        else:
+            self.get_logger().error(f"Error changing planner")
+            
     def change_controller(self):
         self.speak("Callacbk para cambiar el controlador")
 
