@@ -192,11 +192,11 @@ class OrchestratorNode(Node):
             result = self.stop_navigation()
             result = self.navigate_to_point(point)
 
-        elif action == "change_planner":
+        elif action == "change planner":
             result = self.change_planner()
             result = self.navigate_to_point(point)
 
-        elif action == "change_controller":
+        elif action == "change controller":
             result = self.change_controller()
             result = self.navigate_to_point(point)
 
