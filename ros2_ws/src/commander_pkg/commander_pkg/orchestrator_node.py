@@ -251,7 +251,7 @@ class OrchestratorNode(Node):
         prev_planner = self.planner_name
         self.planner_policy()
 
-        self.speak(f"Changing planner from {prev_planner} to {self.planner}")
+        self.speak(f"Changing planner from {prev_planner} to {self.planner_name}")
 
         req = SetParameters.Request()
 

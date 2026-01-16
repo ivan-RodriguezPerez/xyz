@@ -43,12 +43,15 @@ class ListenerNode(Node):
         # Execute request
         self.get_logger().info("Executing the goal")
         response = requests.post(self.url, json=self.data)
+        self.get_logger().info("Transcription received")
         
         goal_handle.succeed()
+        self.get_logger().info("Success")
 
         # Compose result
         result = RecordAudio.Result()
         result.transcription = response.text
+        self.get_logger().info("Transcription result composed")
 
         return result
 
