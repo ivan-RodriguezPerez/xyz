@@ -250,8 +250,12 @@ class OrchestratorNode(Node):
         elapsed_dt = 5
 
         while not self.navigator.isTaskComplete():
-            feedback = self.navigator.getFeedback()
-            distance_remaining = feedback.distance_remaining
+
+            try:
+                feedback = self.navigator.getFeedback()
+                distance_remaining = feedback.distance_remaining
+            except:
+                distance_remaining = deafault_initial_distance
 
             dt = time.time() - t0
 
