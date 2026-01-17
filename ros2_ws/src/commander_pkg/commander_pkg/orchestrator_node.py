@@ -245,9 +245,9 @@ class OrchestratorNode(Node):
         initial_distance = deafault_initial_distance
         feedback = False
 
-        distance_tol = 0.3
+        distance_tol = 0.1
         t0 = time.time()
-        elapsed_dt = 5
+        elapsed_dt = 2.5
 
         while not self.navigator.isTaskComplete():
 
