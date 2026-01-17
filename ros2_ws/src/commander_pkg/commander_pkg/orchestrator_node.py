@@ -243,7 +243,7 @@ class OrchestratorNode(Node):
         timeout_state = False
         deafault_initial_distance = -1.0
         initial_distance = deafault_initial_distance
-        elapsed_time_initial = 20  # Offset for planner computing
+        feedback = False
 
         distance_tol = 0.3
         t0 = time.time()
@@ -274,10 +274,7 @@ class OrchestratorNode(Node):
 
             time.sleep(1)
 
-        if feedback:
-            final_distance = feedback.distance_remaining
-        else:
-            final_distance = 1.0
+        final_distance = feedback.distance_remaining if feedback else -1.0
 
         # Static
         static_state = abs(final_distance - initial_distance) <= distance_tol
