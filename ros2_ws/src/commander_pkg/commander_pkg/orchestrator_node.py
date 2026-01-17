@@ -278,7 +278,7 @@ class OrchestratorNode(Node):
         final_distance = feedback.distance_remaining if feedback else initial_distance
 
         # Static
-        static_state = (initial_distance == 0.0) and (final_distance == 0.0)
+        static_state = initial_distance == final_distance
 
         result = get_navigation_result(self.navigator.getResult(), static_state, timeout_state)
 
