@@ -242,14 +242,20 @@ class OrchestratorNode(Node):
 
         while not self.navigator.isTaskComplete():
             feedback = self.navigator.getFeedback()
+
+            dt = time.time() - t0
+
             if feedback:
-                self.get_logger().info(f"Remaining distance: {feedback.distance_remaining}")
+                self.get_logger().info(f"Remaining distance: {round(feedback.distance_remaining, 2)} | Timeout: {round(dt, 2)}")
+
             time.sleep(1)
 
-            if time.time() - t0 > timeout_sec:
+            if dt > timeout_sec:
                 self.navigator.cancelTask()
+                break
 
         result = self.navigator.getResult()
+        self.get_logger().info(f"Navigation result: {result}")
 
         result_msg = compose_result_msg(result, point_msg)
         self.speak(result_msg)
