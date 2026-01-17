@@ -50,12 +50,7 @@ class OrchestratorNode(Node):
 
         # Change Planner client
         self.planner_name = "Navfn"
-        self.all_planners = [
-            "Navfn",
-            "Smac2D",
-            #"Hybrid",
-            #"Lattice"
-            ]
+        self.all_planners = ["GridBased", "Navfn", "Smac2D", ]
 
         self.cli = self.create_client(SetParameters, '/planner_server/set_parameters')
         while not self.cli.wait_for_service(timeout_sec=1.0):
@@ -248,7 +243,7 @@ class OrchestratorNode(Node):
 
         return result
     
-    def stop_navigation(self):    
+    def stop_navigation(self):
         self.speak("Stopping navigation")
 
     def change_planner(self):
