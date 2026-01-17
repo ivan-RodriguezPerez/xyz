@@ -2,6 +2,7 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
 import requests
+from requests.exceptions import Timeout, ConnectionError, HTTPError
 
 
 class SpeakerNode(Node):
@@ -25,8 +26,19 @@ class SpeakerNode(Node):
         text = msg.data
         self.get_logger().info(f'Message received: {text}')
         self.data = text
-        response = requests.post(self.url, json=self.data)
-        
+
+        try:
+            response = requests.post(self.url, json=self.data)
+            self.get_logger().error("Message delivered to speakers.")
+
+        except HTTPError as e:
+            self.get_logger().error("Message could not be delivered to speakers.")
+
+        except Timeout:
+            self.get_logger().error("Timeout waiting for speaker server")
+
+        except ConnectionError:
+            self.get_logger().error("Speaker server not available")
 
 
 def main(args=None):

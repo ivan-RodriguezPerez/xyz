@@ -7,6 +7,7 @@ from rclpy.executors import MultiThreadedExecutor
 from interfaces_pkg.action import RecordAudio
 
 import requests
+from requests.exceptions import Timeout, ConnectionError
 
 
 class ListenerNode(Node):
@@ -42,18 +43,34 @@ class ListenerNode(Node):
 
         # Execute request
         self.get_logger().info("Executing the goal")
-        response = requests.post(self.url, json=self.data)
-        self.get_logger().info("Transcription received")
-        
-        goal_handle.succeed()
-        self.get_logger().info("Success")
 
-        # Compose result
         result = RecordAudio.Result()
-        result.transcription = response.text
-        self.get_logger().info("Transcription result composed")
 
-        return result
+        try:
+            response = requests.post(self.url, json=self.data, timeout=90)
+
+            response.raise_for_status()
+
+            result.transcription = response.text
+        
+            goal_handle.succeed()
+            self.get_logger().info("Transcription received successfully")
+
+            return result
+
+        except Timeout:
+            self.get_logger().error("Timeout waiting for listener server")
+
+            result.transcription = "Timeout"
+            goal_handle.abort()
+            return result
+
+        except ConnectionError:
+            self.get_logger().error("Listener server not available")
+
+            result.transcription = "ServerNotAvailable"
+            goal_handle.abort()
+            return result
 
 
 def main(args=None):
