@@ -11,7 +11,7 @@ from interfaces_pkg.action import RecordAudio
 
 from std_msgs.msg import String
 
-from commander_pkg.utils.scripts import load_waypoints, compose_result_msg, compose_overall_score
+from commander_pkg.utils.scripts import load_waypoints, compose_result_msg, compose_overall_score, get_navigation_result
 from commander_pkg.utils.config import NAVIGATION_TYPE
 
 from nav2_simple_commander.robot_navigator import BasicNavigator, TaskResult
@@ -158,7 +158,7 @@ class OrchestratorNode(Node):
     def think_manual(self, transcription):
 
         # Actions
-        continuar_words = ["continua", "continue", "sigue", "Continúa", "ontin"]
+        continue_words = ["continua", "continue", "sigue", "Continúa", "ontin"]
         go_back_words = ["previo", "anterior", "vuelve"]
         stop_words = ["stop", "para", "detén", "deten", "Stop", "Para", "Detén", "Deten"]
         change_planner_words = ["planner", "planer", "cambia", "cambio", "Cambia", "Cambio", "planif"]
@@ -166,11 +166,11 @@ class OrchestratorNode(Node):
         check_action = lambda list_words: any(map(transcription.__contains__, list_words))
 
         # 1. Continue
-        if check_action(continuar_words):
-            action = "continuar"
+        if check_action(continue_words):
+            action = "continue"
         # 2. Go to previous point
         elif check_action(go_back_words):
-            action = "go_back"
+            action = "go back"
         # 3. Stop navigation
         elif check_action(stop_words):
             action = "stop"
@@ -184,10 +184,10 @@ class OrchestratorNode(Node):
 
     def act(self, action, point, prev_point):
 
-        if action == "continuar":
+        if action == "continue":
             result = self.navigate_to_point(point)
 
-        elif action == "go_back":
+        elif action == "go back":
             result = self.navigate_to_point(prev_point)
 
         elif action == "stop":
@@ -198,16 +198,16 @@ class OrchestratorNode(Node):
             _ = self.change_planner()
             result = self.navigate_to_point(point)
 
-        elif action == "change controller":
-            _ = self.change_controller()
-            result = self.navigate_to_point(point)
-
         elif action == "turn around":
+            # Turn around in the same x and y coordinates
             turn_point = [prev_point[0], prev_point[1], float(round(prev_point[2] - 3.1415, 2))]
             self.get_logger().info(f"Turn point: {turn_point}")
+            _ = self.navigate_to_point(turn_point)
 
+            # Try again
             _ = self.change_planner()
-            result = self.navigate_to_point(turn_point)
+            self.get_logger().info(f"Navigating again to: {point}")
+            result = self.navigate_to_point(point)
 
         else:
             result = self.navigate_to_point(point)
@@ -235,40 +235,57 @@ class OrchestratorNode(Node):
         goal_pose.pose.position.y = y
         goal_pose.pose.orientation.w = w
 
-        # Notify message
         point_msg = f"x: {x}, y: {y}, w: {w}"
         self.speak(f"Moving to point {point_msg}")
 
         self.navigator.goToPose(goal_pose)
 
+        timeout_state = False
+        initial_distance = "NULL"
+        elapsed_time_initial = 20  # Offset for planner computing
+
+        distance_tol = 0.3
         t0 = time.time()
 
         while not self.navigator.isTaskComplete():
             feedback = self.navigator.getFeedback()
+            distance_remaining = feedback.distance_remaining
 
             dt = time.time() - t0
 
-            if feedback:
-                self.get_logger().info(f"Remaining distance: {round(feedback.distance_remaining, 2)} | Timeout: {round(self.timeout_nav - dt, 2)}")
+            # Assign initial distance
+            if initial_distance == "NULL" and dt > elapsed_time_initial:
+                initial_distance = distance_remaining
 
-            time.sleep(1)
-
+            # Timeout
             if dt > self.timeout_nav:
                 self.navigator.cancelTask()
 
-                self.timeout_nav += 15
-                self.timeout_nav = min(self.timeout_nav, 70)
+                self.timeout_nav = min(self.timeout_nav + 15, 70)
+                timeout_state = True
 
                 break
+            
+            timeout_time_ = max(round(self.timeout_nav - dt, 2), 0.0)
 
-        result = self.navigator.getResult()
+            if feedback:
+                self.get_logger().info(f"Remaining distance: {round(distance_remaining, 2)} | Timeout: {timeout_time_}")
+
+            time.sleep(1)
+
+        final_distance = feedback.distance_remaining
+
+        # Static
+        static_state = abs(final_distance - initial_distance) <= distance_tol
+
+        result = get_navigation_result(self.navigator.getResult(), static_state, timeout_state)
+
         self.get_logger().info(f"Navigation result: {result}")
 
         result_msg = compose_result_msg(result, point_msg)
         self.speak(result_msg)
 
-        return self.navigator.getResult() == TaskResult.SUCCEEDED
-
+        return result
     
     def stop_navigation(self):
         self.speak("Stopping navigation")
@@ -312,9 +329,6 @@ class OrchestratorNode(Node):
             
         self.planner_name = new_planner
 
-    def change_controller(self):
-        self.speak("Changing controller")
-
     def navigation_for(self, waypoints):
         """
         Execute navigation towards a sequence of points.
@@ -352,12 +366,11 @@ class OrchestratorNode(Node):
             self.speak(f"Acción elegida: {action}")
 
             # 4. Act
-            act_result = self.act(action, point, prev_point)
+            result = self.act(action, point, prev_point)
 
             # 5. Check success
-            if not act_result:
-                self.act("turn around", point, prev_point)
-                act_result = self.act(action, point, prev_point)
+            if result == "STATIC":
+                result = self.act("turn around", point, prev_point)
 
             prev_point = point
 

@@ -67,3 +67,19 @@ def compose_overall_score(results):
     overall_score = succeded_points / total_points
 
     return overall_score
+
+def comput_static(nav2_result, static_state, timeout_state):
+    """
+    
+    """
+
+    if static_state & timeout_state:
+        result = "STATIC"
+
+    elif (not static_state) & timeout_state:
+        result = "TIMEOUT"
+
+    else:
+        result = nav2_result
+
+    return result
