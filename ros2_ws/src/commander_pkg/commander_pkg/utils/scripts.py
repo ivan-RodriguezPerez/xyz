@@ -68,7 +68,8 @@ def compose_overall_score(results):
 
     return overall_score
 
-def comput_static(nav2_result, static_state, timeout_state):
+
+def get_navigation_result(nav2_result, static_state, timeout_state):
     """
     
     """
