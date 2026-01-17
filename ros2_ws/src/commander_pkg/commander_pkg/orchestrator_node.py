@@ -241,7 +241,8 @@ class OrchestratorNode(Node):
         self.navigator.goToPose(goal_pose)
 
         timeout_state = False
-        initial_distance = "NULL"
+        deafault_initial_distance = -1.0
+        initial_distance = deafault_initial_distance
         elapsed_time_initial = 20  # Offset for planner computing
 
         distance_tol = 0.3
@@ -254,7 +255,7 @@ class OrchestratorNode(Node):
             dt = time.time() - t0
 
             # Assign initial distance
-            if initial_distance == "NULL" and dt > self.timeout_nav / 2:
+            if initial_distance == deafault_initial_distance and dt > self.timeout_nav / 2:
                 initial_distance = distance_remaining
 
             # Timeout
