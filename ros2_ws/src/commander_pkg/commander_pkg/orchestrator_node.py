@@ -247,6 +247,7 @@ class OrchestratorNode(Node):
 
         distance_tol = 0.3
         t0 = time.time()
+        elapsed_dt = 5
 
         while not self.navigator.isTaskComplete():
             feedback = self.navigator.getFeedback()
@@ -255,16 +256,13 @@ class OrchestratorNode(Node):
             dt = time.time() - t0
 
             # Assign initial distance
-            if initial_distance == deafault_initial_distance and dt > self.timeout_nav / 2:
+            if (initial_distance == deafault_initial_distance) and (dt > elapsed_dt):
                 initial_distance = distance_remaining
 
             # Timeout
             if dt > self.timeout_nav:
                 self.navigator.cancelTask()
-
-                self.timeout_nav = min(self.timeout_nav + 15, 70)
                 timeout_state = True
-
                 break
             
             timeout_time_ = max(round(self.timeout_nav - dt, 2), 0.0)
@@ -372,6 +370,15 @@ class OrchestratorNode(Node):
             # 5. Check success
             if result == "STATIC":
                 result = self.act("turn around", point, prev_point)
+
+            elif result == "TIMEOUT":
+                msg = String()
+                msg.data = "The navigation failed by timeout. Trying again."
+                self.publisher_speaker.publish(msg)
+
+                self.timeout_nav = min(self.timeout_nav + 15, 70)
+                result = self.act("continue", point, prev_point)
+                
 
             prev_point = point
 
