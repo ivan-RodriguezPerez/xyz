@@ -14,7 +14,7 @@ from std_msgs.msg import String
 from commander_pkg.utils.scripts import load_waypoints, compose_result_msg, compose_overall_score
 from commander_pkg.utils.config import NAVIGATION_TYPE
 
-from nav2_simple_commander.robot_navigator import BasicNavigator
+from nav2_simple_commander.robot_navigator import BasicNavigator, TaskResult
 
 from geometry_msgs.msg import PoseStamped
 
@@ -260,7 +260,7 @@ class OrchestratorNode(Node):
         result_msg = compose_result_msg(result, point_msg)
         self.speak(result_msg)
 
-        return self.navigator.getResult() == self.navigator.TaskResult.SUCCEEDED
+        return self.navigator.getResult() == TaskResult.SUCCEEDED
 
     
     def stop_navigation(self):
