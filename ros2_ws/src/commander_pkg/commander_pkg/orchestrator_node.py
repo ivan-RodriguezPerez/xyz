@@ -326,7 +326,7 @@ class OrchestratorNode(Node):
 
         self.speak("Starting navigation.")
 
-        prev_point = [0, 0, 0]
+        prev_point = [0.0, 0.0, 0.0]
 
         for idx, point in enumerate(waypoints):
 
