@@ -50,7 +50,12 @@ class OrchestratorNode(Node):
 
         # Change Planner client
         self.planner_name = "Navfn"
-        self.all_planners = ["Navfn", "Smac2D", "Hybrid", "Lattice"]
+        self.all_planners = [
+            "Navfn",
+            "Smac2D",
+            #"Hybrid",
+            #"Lattice"
+            ]
 
         self.cli = self.create_client(SetParameters, '/planner_server/set_parameters')
         while not self.cli.wait_for_service(timeout_sec=1.0):
@@ -313,13 +318,14 @@ class OrchestratorNode(Node):
             #x, y, w = point
             self.speak(f"Going to a new scheduled point. Do you want to continue?", 6)
 
-            # 2. Receive instructions - Record audio
-            transcription = self.record_audio()
-            self.speak(transcription)
+            if False:
+                # 2. Receive instructions - Record audio
+                transcription = self.record_audio()
+                self.speak(transcription)
 
-            # 3. Think
-            #self.think(transcription)
-            action = self.think_manual(transcription)
+                # 3. Think
+                #self.think(transcription)
+                action = self.think_manual(transcription)
             action = "change planner"
             self.speak(f"Acción elegida: {action}")
 
