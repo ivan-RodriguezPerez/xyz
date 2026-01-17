@@ -241,13 +241,12 @@ class OrchestratorNode(Node):
         self.navigator.goToPose(goal_pose)
 
         timeout_state = False
-        deafault_initial_distance = -1.0
-        initial_distance = deafault_initial_distance
+
+        initial_distance = 0.0
         feedback = False
 
-        distance_tol = 0.1
         t0 = time.time()
-        elapsed_dt = 2.5
+        elapsed_dt = 5.0
 
         while not self.navigator.isTaskComplete():
 
@@ -255,12 +254,12 @@ class OrchestratorNode(Node):
                 feedback = self.navigator.getFeedback()
                 distance_remaining = feedback.distance_remaining
             except:
-                distance_remaining = deafault_initial_distance
+                distance_remaining = initial_distance
 
             dt = time.time() - t0
 
-            # Assign initial distance
-            if (initial_distance == deafault_initial_distance) and (dt > elapsed_dt):
+            # Update initial distance
+            if (initial_distance == 0.0) and (dt > elapsed_dt):
                 initial_distance = distance_remaining
 
             # Timeout
@@ -276,10 +275,10 @@ class OrchestratorNode(Node):
 
             time.sleep(1)
 
-        final_distance = feedback.distance_remaining if feedback else -1.0
+        final_distance = feedback.distance_remaining if feedback else initial_distance
 
         # Static
-        static_state = abs(final_distance - initial_distance) <= distance_tol
+        static_state = (initial_distance == 0.0) and (final_distance == 0.0)
 
         result = get_navigation_result(self.navigator.getResult(), static_state, timeout_state)
 
@@ -348,8 +347,8 @@ class OrchestratorNode(Node):
         results = {}
 
         self.speak("Starting navigation.")
-
-        prev_point = [0.0, 0.0, 0.0]
+        
+        prev_point = [-1.0, -0.45, -3.72]
 
         for idx, point in enumerate(waypoints):
 
