@@ -201,8 +201,9 @@ class OrchestratorNode(Node):
             result = self.navigate_to_point(point)
 
         elif action == "turn around":
-            turn_point = prev_point
-            turn_point[-1] = turn_point[-1] - 3.1415
+            turn_point = [prev_point[0], prev_point[1], prev_point[2] - 3.1415]
+            self.get_logger().info(f"Turn point: {turn_point}")
+
             _ = self.change_planner()
             result = self.navigate_to_point(turn_point)
 
@@ -246,7 +247,7 @@ class OrchestratorNode(Node):
             dt = time.time() - t0
 
             if feedback:
-                self.get_logger().info(f"Remaining distance: {round(feedback.distance_remaining, 2)} | Timeout: {round(dt, 2)}")
+                self.get_logger().info(f"Remaining distance: {round(feedback.distance_remaining, 2)} | Timeout: {round(timeout_sec - dt, 2)}")
 
             time.sleep(1)
 
