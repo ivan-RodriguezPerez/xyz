@@ -64,7 +64,7 @@ class OrchestratorNode(Node):
         if NAVIGATION_TYPE == 'random':
             random.shuffle(self.waypoints)
 
-        self.timeout_nav = 20  # [s]
+        self.timeout_nav = 30  # [s]
 
         self.get_logger().info("Successfully created commander node")
         time.sleep(1)
@@ -254,7 +254,7 @@ class OrchestratorNode(Node):
             dt = time.time() - t0
 
             # Assign initial distance
-            if initial_distance == "NULL" and dt > elapsed_time_initial:
+            if initial_distance == "NULL" and dt > self.timeout_nav / 2:
                 initial_distance = distance_remaining
 
             # Timeout
