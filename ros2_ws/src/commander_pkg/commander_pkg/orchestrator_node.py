@@ -193,7 +193,7 @@ class OrchestratorNode(Node):
             result = self.navigate_to_point(point)
 
         elif action == "change planner":
-            _ = self.change_planner2()
+            _ = self.change_planner()
             result = self.navigate_to_point(point)
 
         elif action == "change controller":
@@ -203,7 +203,7 @@ class OrchestratorNode(Node):
         elif action == "turn around":
             turn_point = prev_point
             turn_point[-1] = turn_point[-1] - 3.1415
-            _ = self.change_planner2()
+            _ = self.change_planner()
             result = self.navigate_to_point(turn_point)
 
         else:
@@ -265,14 +265,6 @@ class OrchestratorNode(Node):
     
     def stop_navigation(self):
         self.speak("Stopping navigation")
-
-    def change_planner2(self):
-        
-        prev_planner = self.planner_name
-        self.planner_policy()
-        self.speak(f"Changing planner from {prev_planner} to {self.planner_name}")
-
-        self.navigator.setPlannerId(self.planner_name)
 
     def change_planner(self):
         
