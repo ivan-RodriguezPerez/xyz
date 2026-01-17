@@ -274,7 +274,10 @@ class OrchestratorNode(Node):
 
             time.sleep(1)
 
-        final_distance = feedback.distance_remaining
+        if feedback:
+            final_distance = feedback.distance_remaining
+        else:
+            final_distance = 1.0
 
         # Static
         static_state = abs(final_distance - initial_distance) <= distance_tol
