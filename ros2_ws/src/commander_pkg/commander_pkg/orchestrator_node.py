@@ -64,6 +64,8 @@ class OrchestratorNode(Node):
         if NAVIGATION_TYPE == 'random':
             random.shuffle(self.waypoints)
 
+        self.timeout_nav = 20  # [s]
+
         self.get_logger().info("Successfully created commander node")
         time.sleep(1)
 
@@ -201,7 +203,7 @@ class OrchestratorNode(Node):
             result = self.navigate_to_point(point)
 
         elif action == "turn around":
-            turn_point = [prev_point[0], prev_point[1], prev_point[2] - 3.1415]
+            turn_point = [prev_point[0], prev_point[1], float(round(prev_point[2] - 3.1415, 2))]
             self.get_logger().info(f"Turn point: {turn_point}")
 
             _ = self.change_planner()
@@ -212,7 +214,7 @@ class OrchestratorNode(Node):
 
         return result
 
-    def navigate_to_point(self, point, timeout_sec=20):
+    def navigate_to_point(self, point):
         """
         Function used to send a command to the robot using a set of coordinates and orientation.
 
@@ -247,12 +249,16 @@ class OrchestratorNode(Node):
             dt = time.time() - t0
 
             if feedback:
-                self.get_logger().info(f"Remaining distance: {round(feedback.distance_remaining, 2)} | Timeout: {round(timeout_sec - dt, 2)}")
+                self.get_logger().info(f"Remaining distance: {round(feedback.distance_remaining, 2)} | Timeout: {round(self.timeout_nav - dt, 2)}")
 
             time.sleep(1)
 
-            if dt > timeout_sec:
+            if dt > self.timeout_nav:
                 self.navigator.cancelTask()
+
+                self.timeout_nav += 15
+                self.timeout_nav = min(self.timeout_nav, 70)
+
                 break
 
         result = self.navigator.getResult()
