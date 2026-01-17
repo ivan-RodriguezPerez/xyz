@@ -189,21 +189,29 @@ class OrchestratorNode(Node):
             result = self.navigate_to_point(prev_point)
 
         elif action == "stop":
-            result = self.stop_navigation()
+            _ = self.stop_navigation()
             result = self.navigate_to_point(point)
 
         elif action == "change planner":
-            result = self.change_planner()
+            _ = self.change_planner2()
             result = self.navigate_to_point(point)
 
         elif action == "change controller":
-            result = self.change_controller()
+            _ = self.change_controller()
             result = self.navigate_to_point(point)
+
+        elif action == "turn around":
+            turn_point = prev_point
+            turn_point[-1] = turn_point[-1] - 3.1415
+            _ = self.change_planner2()
+            result = self.navigate_to_point(turn_point)
 
         else:
             result = self.navigate_to_point(point)
 
-    def navigate_to_point(self, point):
+        return result
+
+    def navigate_to_point(self, point, timeout_sec=20):
         """
         Function used to send a command to the robot using a set of coordinates and orientation.
 
@@ -230,21 +238,35 @@ class OrchestratorNode(Node):
 
         self.navigator.goToPose(goal_pose)
 
+        t0 = time.time()
+
         while not self.navigator.isTaskComplete():
             feedback = self.navigator.getFeedback()
             if feedback:
                 self.get_logger().info(f"Remaining distance: {feedback.distance_remaining}")
             time.sleep(1)
 
+            if time.time() - t0 > timeout_sec:
+                self.navigator.cancelTask()
+
         result = self.navigator.getResult()
 
         result_msg = compose_result_msg(result, point_msg)
         self.speak(result_msg)
 
-        return result
+        return self.navigator.getResult() == self.navigator.TaskResult.SUCCEEDED
+
     
     def stop_navigation(self):
         self.speak("Stopping navigation")
+
+    def change_planner2(self):
+        
+        prev_planner = self.planner_name
+        self.planner_policy()
+        self.speak(f"Changing planner from {prev_planner} to {self.planner_name}")
+
+        self.navigator.setPlannerId(self.planner_name)
 
     def change_planner(self):
         
@@ -325,7 +347,13 @@ class OrchestratorNode(Node):
             self.speak(f"Acción elegida: {action}")
 
             # 4. Act
-            self.act(action, point, prev_point)
+            act_result = self.act(action, point, prev_point)
+
+            # 5. Check success
+            if not act_result:
+                self.act("turn around", point, prev_point)
+                act_result = self.act(action, point, prev_point)
+
             prev_point = point
 
         msg = String()
