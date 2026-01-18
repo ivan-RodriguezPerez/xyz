@@ -52,7 +52,7 @@ class OrchestratorNode(Node):
 
         self.publisher_status = self.create_publisher(
             NavigationStatus,
-            'status_dashboard',
+            'displayer_topic',
             10,
         )
 
@@ -286,7 +286,7 @@ class OrchestratorNode(Node):
                 msg_status.distance_remaining = -99.99
                 msg_status.timeout_time = -99.99
 
-            self.publisher_status.publish(msg)
+            self.publisher_status.publish(msg_status)
 
             time.sleep(1)
 

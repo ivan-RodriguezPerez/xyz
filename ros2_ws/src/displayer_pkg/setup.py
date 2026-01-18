@@ -20,7 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            "displayer_node = displayer_pkg.displayer_node:main"
+            "dashboard_node = displayer_pkg.dashboard_node:main"
         ],
     },
 )
