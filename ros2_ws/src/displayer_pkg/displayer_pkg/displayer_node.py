@@ -20,6 +20,8 @@ class DisplayerNode(Node):
             10
         )
 
+        self.display_results(-99.99, -99.99)
+
         self.get_logger().info("Successfully created dashboard node.")
 
     def image_callback(self, msg):
@@ -33,7 +35,7 @@ class DisplayerNode(Node):
 
     def display_results(self, distance_remaining, timeout_time):
 
-        frame = np.zeros((0, 0, 3))
+        frame = np.zeros((400, 400, 3))
         color = (255, 255, 255)
 
         # Distance
