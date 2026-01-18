@@ -84,3 +84,4 @@ def get_navigation_result(nav2_result, static_state, timeout_state):
         result = nav2_result
 
     return result
+

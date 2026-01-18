@@ -35,26 +35,26 @@ class DisplayerNode(Node):
 
     def display_results(self, distance_remaining, timeout_time):
 
-        frame = np.zeros((400, 400, 3))
+        frame = np.zeros((200, 800, 3))
         color = (255, 255, 255)
+        font_scale = 1.5
+        thickness = 2
 
         # Distance
         cv2.putText(
             frame, f"Distance remaining {distance_remaining}",
-            (30, 10),
+            (30, 50),
             cv2.FONT_HERSHEY_SIMPLEX,
-            0.5,
-            color,
-            1
+            font_scale,
+            color, thickness
         )
         # Timeout
         cv2.putText(
             frame, f"Timeout time {timeout_time}",
-            (75, 10),
+            (30, 100),
             cv2.FONT_HERSHEY_SIMPLEX,
-            0.5,
-            color,
-            1
+            font_scale,
+            color, thickness
         )
 
         cv2.imshow('Navigation Status', frame)

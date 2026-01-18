@@ -72,7 +72,7 @@ class OrchestratorNode(Node):
         if NAVIGATION_TYPE == 'random':
             random.shuffle(self.waypoints)
 
-        self.timeout_nav = 30  # [s]
+        self.timeout_nav = 50  # [s]
 
         self.get_logger().info("Successfully created commander node")
         time.sleep(1)

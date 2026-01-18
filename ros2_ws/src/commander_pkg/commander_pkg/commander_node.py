@@ -116,13 +116,8 @@ class CommanderNode(Node):
             result = self.navigate_to_point(point)
 
             results[idx] = result
-
-            # Cambiar de planificador local
-            # Si resultoado is not SUCCEDED -> Change scheduler
-            # Otherwise use default planner
-            if idx > 2:
-                pass
-
+            
+            self.get_logger().info(results)
 
         msg = "The navigation through all waypoints has finished."
         self.publish_message(msg)
