@@ -401,6 +401,8 @@ class OrchestratorNode(Node):
 
             prev_point = point
 
+            results[idx] = result
+
         msg = String()
         msg.data = "The navigation through all waypoints has finished."
         self.publisher_speaker.publish(msg)
