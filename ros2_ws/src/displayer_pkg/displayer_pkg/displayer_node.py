@@ -6,16 +6,16 @@ import cv2
 import numpy as np
 
 
-class DashboardNode(Node):
+class DisplayerNode(Node):
     def __init__(self):
 
-        super().__init__('dashboard_node')
-        self.get_logger().info("Started dashboard_node")
+        super().__init__('displayer_node')
+        self.get_logger().info("Started displayer node")
 
         # Create subscription
         self.subscription = self.create_subscription(
             NavigationStatus,
-            '/status_dashboard',
+            '/displayer_topic',
             self.image_callback,
             10
         )
@@ -61,7 +61,7 @@ class DashboardNode(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    node = DashboardNode()
+    node = DisplayerNode()
     rclpy.spin(node)
     rclpy.shutdown()
 
