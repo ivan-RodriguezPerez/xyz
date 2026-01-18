@@ -3,4 +3,5 @@
     <node pkg="speaker_pkg" exec="speaker_node"/>
     <node pkg="commander_pkg" exec="orchestrator_node"/>
     <node pkg="llm_pkg" exec="llm_chat_node"/>
+    <node pkg="displayer_pkg" exec="dashboard_node"/>
 </launch>

@@ -8,8 +8,10 @@ from rcl_interfaces.srv import SetParameters
 from rcl_interfaces.msg import Parameter, ParameterType, ParameterValue
 
 from interfaces_pkg.action import RecordAudio
+from interfaces_pkg.msg import NavigationStatus
 
 from std_msgs.msg import String
+
 
 from commander_pkg.utils.scripts import load_waypoints, compose_result_msg, compose_overall_score, get_navigation_result
 from commander_pkg.utils.config import NAVIGATION_TYPE
@@ -46,6 +48,12 @@ class OrchestratorNode(Node):
             String,
             'input_request',
             10
+        )
+
+        self.publisher_status = self.create_publisher(
+            NavigationStatus,
+            'status_dashboard',
+            10,
         )
 
         # Change Planner client
@@ -267,18 +275,26 @@ class OrchestratorNode(Node):
                 self.navigator.cancelTask()
                 timeout_state = True
                 break
-            
+
             timeout_time_ = max(round(self.timeout_nav - dt, 2), 0.0)
 
+            msg_status = NavigationStatus()
             if feedback:
-                self.get_logger().info(f"Remaining distance: {round(distance_remaining, 2)} | Timeout: {timeout_time_}")
+                msg_status.distance_remaining = round(distance_remaining, 2)
+                msg_status.timeout_time = timeout_time_
+            else:
+                msg_status.distance_remaining = -99.99
+                msg_status.timeout_time = -99.99
+
+            self.publisher_status.publish(msg)
 
             time.sleep(1)
 
         final_distance = feedback.distance_remaining if feedback else initial_distance
 
         # Static
-        static_state = initial_distance == final_distance
+        min_distance = 0.3
+        static_state = abs(final_distance - initial_distance) <= min_distance
 
         result = get_navigation_result(self.navigator.getResult(), static_state, timeout_state)
 
@@ -288,12 +304,12 @@ class OrchestratorNode(Node):
         self.speak(result_msg)
 
         return result
-    
+
     def stop_navigation(self):
         self.speak("Stopping navigation")
 
     def change_planner(self):
-        
+
         prev_planner = self.planner_name
         self.planner_policy()
 
@@ -328,7 +344,7 @@ class OrchestratorNode(Node):
 
         while new_planner == self.planner_name:
             new_planner = random.sample(self.all_planners, 1)[0]
-            
+
         self.planner_name = new_planner
 
     def navigation_for(self, waypoints):
@@ -390,7 +406,7 @@ class OrchestratorNode(Node):
         self.publisher_speaker.publish(msg)
 
         overall_score = round(100*compose_overall_score(results), 3)
-        
+
         msg = String()
         msg.data = f"The robot reached {overall_score}% of the defined waypoints."
         self.publisher_speaker.publish(msg)
