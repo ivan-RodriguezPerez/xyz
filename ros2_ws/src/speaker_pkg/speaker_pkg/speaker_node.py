@@ -29,7 +29,7 @@ class SpeakerNode(Node):
 
         try:
             response = requests.post(self.url, json=self.data)
-            self.get_logger().error("Message delivered to speakers.")
+            self.get_logger().info("Message delivered to speakers.")
 
         except HTTPError as e:
             self.get_logger().error("Message could not be delivered to speakers.")

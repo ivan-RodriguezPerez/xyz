@@ -29,7 +29,7 @@ class DisplayerNode(Node):
         distance_remaining = msg.distance_remaining
         timeout_time = msg.timeout_time
 
-        self.get_logger().info(f'Message received:\n  distance_remaining: {distance_remaining}\n  timeout time: {timeout_time}')
+        self.get_logger().info(f'Message received: distance_remaining: {distance_remaining} m,  timeout time: {timeout_time} s')
 
         self.display_results(distance_remaining, timeout_time)
 
@@ -42,7 +42,7 @@ class DisplayerNode(Node):
 
         # Distance
         cv2.putText(
-            frame, f"Distance remaining {distance_remaining}",
+            frame, f"Distance remaining {distance_remaining} m",
             (30, 50),
             cv2.FONT_HERSHEY_SIMPLEX,
             font_scale,
@@ -50,7 +50,7 @@ class DisplayerNode(Node):
         )
         # Timeout
         cv2.putText(
-            frame, f"Timeout time {timeout_time}",
+            frame, f"Timeout time {timeout_time} s",
             (30, 100),
             cv2.FONT_HERSHEY_SIMPLEX,
             font_scale,
