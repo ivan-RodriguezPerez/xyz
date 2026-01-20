@@ -424,7 +424,7 @@ class OrchestratorNode(Node):
                 # 3. Think
                 #self.think(transcription)
                 action = self.think_manual(transcription)
-            action = "change planner"
+            action = "change controller"
             self.speak(f"Acción elegida: {action}")
 
             # 4. Act
