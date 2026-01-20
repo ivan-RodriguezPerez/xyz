@@ -80,7 +80,7 @@ class OrchestratorNode(Node):
         if NAVIGATION_TYPE == 'random':
             random.shuffle(self.waypoints)
 
-        self.timeout_nav = 90  # [s]
+        self.timeout_nav = 120  # [s]
         self.static_strategy = "CONTROLLER"
 
         self.get_logger().info("Successfully created commander node")
@@ -468,7 +468,7 @@ class OrchestratorNode(Node):
                 msg.data = "The navigation failed by timeout. Trying again."
                 self.publisher_speaker.publish(msg)
 
-                self.timeout_nav = min(self.timeout_nav + 15, 120)
+                self.timeout_nav = min(self.timeout_nav + 15, 150)
                 result = self.act("continue", point, prev_point)
                 
 
