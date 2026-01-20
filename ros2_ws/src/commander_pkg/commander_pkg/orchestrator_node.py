@@ -65,7 +65,7 @@ class OrchestratorNode(Node):
             self.get_logger().info('Esperando a que el servicio de planner_server/set_parameters este disponible...')
 
         # Change Controller client
-        self.controller_name = ""
+        self.controller_name = "FollowPath"
         self.all_controllers = ["FollowPath", "MPPIController", "RPPC"]  # ["DWB", "TEB", "RPP"]
 
         self.controller_cli = self.create_client(SetParameters, '/controller_server/set_parameters')
@@ -202,7 +202,7 @@ class OrchestratorNode(Node):
 
         return action
 
-    def act(self, action, point, prev_point):
+    def act(self, action, point, prev_point, planner=None, controller=None):
 
         if action == "continue":
             result = self.navigate_to_point(point)
@@ -215,11 +215,11 @@ class OrchestratorNode(Node):
             result = self.navigate_to_point(point)
 
         elif action == "change planner":
-            _ = self.change_planner()
+            _ = self.change_planner(planner)
             result = self.navigate_to_point(point)
 
         elif action == "change controller":
-            _ = self.change_controller()
+            _ = self.change_controller(controller)
             result = self.navigate_to_point(point)
 
         elif action == "turn around":
@@ -324,59 +324,71 @@ class OrchestratorNode(Node):
     def stop_navigation(self):
         self.speak("Stopping navigation")
 
-    def change_planner(self):
+    def change_planner(self, planner=None):
 
         prev_planner = self.planner_name
-        self.planner_policy()
 
-        self.speak(f"Changing planner from {prev_planner} to {self.planner_name}")
-
-        req = SetParameters.Request()
-
-        # Define new planner parameter
-        param = Parameter()
-        param.name = "planner_id"
-        param.value = ParameterValue(type=ParameterType.PARAMETER_STRING, string_value=self.planner_name)
-
-        # Add parameter to request
-        req.parameters = [param]
-
-        # Call service for changing planner
-        future = self.planner_cli.call_async(req)
-        rclpy.spin_until_future_complete(self, future)
-
-        if future.result() is not None:
-            self.get_logger().info(f"Planner changed to {self.planner_name}")
-
+        if planner:
+            new_planner = planner
         else:
-            self.get_logger().error(f"Error changing planner")
+            self.planner_policy()
+            new_planner = self.planner_name
 
-    def change_controller(self):
+        if new_planner != prev_planner:
+            self.speak(f"Changing planner from {prev_planner} to {self.planner_name}")
+
+            req = SetParameters.Request()
+
+            # Define new planner parameter
+            param = Parameter()
+            param.name = "planner_id"
+            param.value = ParameterValue(type=ParameterType.PARAMETER_STRING, string_value=self.planner_name)
+
+            # Add parameter to request
+            req.parameters = [param]
+
+            # Call service for changing planner
+            future = self.planner_cli.call_async(req)
+            rclpy.spin_until_future_complete(self, future)
+
+            if future.result() is not None:
+                self.get_logger().info(f"Planner changed to {self.planner_name}")
+
+            else:
+                self.get_logger().error(f"Error changing planner")
+
+    def change_controller(self, controller=None):
 
         prev_controller = self.controller_name
-        self.controller_policy()
 
-        self.speak(f"Changing controller from {prev_controller} to {self.controller_name}")
-
-        req = SetParameters.Request()
-
-        # Define new planner parameter
-        param = Parameter()
-        param.name = "controller_id"
-        param.value = ParameterValue(type=ParameterType.PARAMETER_STRING, string_value=self.controller_name)
-
-        # Add parameter to request
-        req.parameters = [param]
-
-        # Call service for changing planner
-        future = self.controller_cli.call_async(req)
-        rclpy.spin_until_future_complete(self, future)
-
-        if future.result() is not None:
-            self.get_logger().info(f"Controller changed to {self.controller_name}")
-
+        if controller:
+            new_controller = controller
         else:
-            self.get_logger().error(f"Error changing controller")
+            self.controller_policy()
+            new_controller = self.controller_name
+
+        if new_controller != prev_controller:
+            self.speak(f"Changing controller from {prev_controller} to {self.controller_name}")
+
+            req = SetParameters.Request()
+
+            # Define new planner parameter
+            param = Parameter()
+            param.name = "controller_id"
+            param.value = ParameterValue(type=ParameterType.PARAMETER_STRING, string_value=self.controller_name)
+
+            # Add parameter to request
+            req.parameters = [param]
+
+            # Call service for changing planner
+            future = self.controller_cli.call_async(req)
+            rclpy.spin_until_future_complete(self, future)
+
+            if future.result() is not None:
+                self.get_logger().info(f"Controller changed to {self.controller_name}")
+
+            else:
+                self.get_logger().error(f"Error changing controller")
 
     def planner_policy(self):
         """
