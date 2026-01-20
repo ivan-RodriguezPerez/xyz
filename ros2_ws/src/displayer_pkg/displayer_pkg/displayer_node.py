@@ -29,8 +29,6 @@ class DisplayerNode(Node):
         distance_remaining = msg.distance_remaining
         timeout_time = msg.timeout_time
 
-        self.get_logger().info(f'Message received: distance_remaining: {distance_remaining} m,  timeout time: {timeout_time} s')
-
         self.display_results(distance_remaining, timeout_time)
 
     def display_results(self, distance_remaining, timeout_time):

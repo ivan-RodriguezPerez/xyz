@@ -81,6 +81,7 @@ class OrchestratorNode(Node):
             random.shuffle(self.waypoints)
 
         self.timeout_nav = 50  # [s]
+        self.static_strategy = "CONTROLLER"
 
         self.get_logger().info("Successfully created commander node")
         time.sleep(1)
@@ -455,8 +456,14 @@ class OrchestratorNode(Node):
 
             # 5. Check success
             if result == "STATIC":
-                #result = self.act("turn around", point, prev_point)
-                result = self.act("change controller", point, prev_point)
+                if self.static_strategy == "PLANNER":
+                    result = self.act("turn around", point, prev_point, planner="Navfn")
+                elif self.static_strategy == "CONTROLLER":
+                    result = self.act("change controller", point, prev_point, controller="MPPIController")
+                else:
+                    result = self.act("turn around", point, prev_point, planner="Navfn")
+                    result = self.act("change controller", point, prev_point, controller="MPPIController")
+
 
             elif result == "TIMEOUT":
                 msg = String()
