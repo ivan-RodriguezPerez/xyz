@@ -163,7 +163,8 @@ class OrchestratorNode(Node):
         to correct tool to continue or stop a navigation simulation accross points. You are receiving a specific
         transcription from the user and you must convert the user message into an action using the tools you have
         been provided. The message from user is: {transcription}. According to this user input you must answer
-        "continue" or "stop".
+        "continue", "go back", "stop", "change planner", "change controller", or "turn around".
+
         """
 
         llm_msg = String()
@@ -212,8 +213,8 @@ class OrchestratorNode(Node):
             result = self.navigate_to_point(prev_point)
 
         elif action == "stop":
-            _ = self.stop_navigation()
-            result = self.navigate_to_point(point)
+            self.speak("Stopping navigation")
+            result = "STOP"
 
         elif action == "change planner":
             _ = self.change_planner(planner)
@@ -321,9 +322,6 @@ class OrchestratorNode(Node):
         self.speak(result_msg)
 
         return result
-
-    def stop_navigation(self):
-        self.speak("Stopping navigation")
 
     def change_planner(self, planner=None):
 
@@ -437,25 +435,25 @@ class OrchestratorNode(Node):
         for idx, point in enumerate(waypoints):
 
             # 1. Contextualiza - Speak
-            #x, y, w = point
             self.speak(f"Going to a new scheduled point. Do you want to continue?", 6)
 
-            if False:
-                # 2. Receive instructions - Record audio
-                transcription = self.record_audio()
-                self.speak(transcription)
+            # 2. Receive instructions - Record audio
+            transcription = self.record_audio()
+            self.speak(transcription)
 
-                # 3. Think
-                #self.think(transcription)
-                action = self.think_manual(transcription)
-            action = "change controller"
+            # 3. Think
+            #self.think(transcription)
+            action = self.think_manual(transcription)
             self.speak(f"Acción elegida: {action}")
 
             # 4. Act
             result = self.act(action, point, prev_point)
 
+            if result == "STOP":
+                break
+
             # 5. Check success
-            if result == "STATIC":
+            elif result == "STATIC":
                 if self.static_strategy == "PLANNER":
                     result = self.act("turn around", point, prev_point, planner="Navfn")
                 elif self.static_strategy == "CONTROLLER":
