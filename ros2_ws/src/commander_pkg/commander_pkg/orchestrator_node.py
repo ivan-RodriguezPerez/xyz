@@ -68,7 +68,7 @@ class OrchestratorNode(Node):
         self.controller_name = ""
         self.all_controllers = ["FollowPath", "MPPIController", "RPPC"]  # ["DWB", "TEB", "RPP"]
 
-        self.controller_cli = self.crete_client(SetParameters, '/controller_server/set_parameters')
+        self.controller_cli = self.create_client(SetParameters, '/controller_server/set_parameters')
         while not self.controller_cli.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('Esperando a que el servicio de controller_server/set_parameters este disponible...')
 
