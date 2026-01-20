@@ -60,9 +60,18 @@ class OrchestratorNode(Node):
         self.planner_name = "Navfn"
         self.all_planners = ["GridBased", "Navfn", "Smac2D", ]
 
-        self.cli = self.create_client(SetParameters, '/planner_server/set_parameters')
-        while not self.cli.wait_for_service(timeout_sec=1.0):
-            self.get_logger().info('Esperando a que el servicio de set_parameters este disponible...')
+        self.planner_cli = self.create_client(SetParameters, '/planner_server/set_parameters')
+        while not self.planner_cli.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info('Esperando a que el servicio de planner_server/set_parameters este disponible...')
+
+        # Change Controller client
+        self.controller_name = ""
+        self.all_controllers = ["FollowPath", "MPPIController", "RPPC"]  # ["DWB", "TEB", "RPP"]
+
+        self.controller_cli = self.crete_client(SetParameters, '/controller_server/set_parameters')
+        while not self.controller_cli.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info('Esperando a que el servicio de controller_server/set_parameters este disponible...')
+
 
         self.navigator = BasicNavigator()
 
@@ -169,7 +178,8 @@ class OrchestratorNode(Node):
         continue_words = ["continua", "continue", "sigue", "Continúa", "ontin"]
         go_back_words = ["previo", "anterior", "vuelve"]
         stop_words = ["stop", "para", "detén", "deten", "Stop", "Para", "Detén", "Deten"]
-        change_planner_words = ["planner", "planer", "cambia", "cambio", "Cambia", "Cambio", "planif"]
+        change_planner_words = ["planner", "planer", "planif"]
+        change_controller_words = ["control", "controlador", "controller", "contro"]
 
         check_action = lambda list_words: any(map(transcription.__contains__, list_words))
 
@@ -185,6 +195,9 @@ class OrchestratorNode(Node):
         # 4. Change planner
         elif check_action(change_planner_words):
             action = "change planner"
+        # 5. Change controller
+        elif check_action(change_controller_words):
+            action = "change controller"
         else:
             action = "continue"
 
@@ -204,6 +217,10 @@ class OrchestratorNode(Node):
 
         elif action == "change planner":
             _ = self.change_planner()
+            result = self.navigate_to_point(point)
+
+        elif action == "change controller":
+            _ = self.change_controller()
             result = self.navigate_to_point(point)
 
         elif action == "turn around":
@@ -326,7 +343,7 @@ class OrchestratorNode(Node):
         req.parameters = [param]
 
         # Call service for changing planner
-        future = self.cli.call_async(req)
+        future = self.planner_cli.call_async(req)
         rclpy.spin_until_future_complete(self, future)
 
         if future.result() is not None:
@@ -334,6 +351,33 @@ class OrchestratorNode(Node):
 
         else:
             self.get_logger().error(f"Error changing planner")
+
+    def change_controller(self):
+
+        prev_controller = self.controller_name
+        self.controller_policy()
+
+        self.speak(f"Changing controller from {prev_controller} to {self.controller_name}")
+
+        req = SetParameters.Request()
+
+        # Define new planner parameter
+        param = Parameter()
+        param.name = "controller_id"
+        param.value = ParameterValue(type=ParameterType.PARAMETER_STRING, string_value=self.controller_name)
+
+        # Add parameter to request
+        req.parameters = [param]
+
+        # Call service for changing planner
+        future = self.controller_cli.call_async(req)
+        rclpy.spin_until_future_complete(self, future)
+
+        if future.result() is not None:
+            self.get_logger().info(f"Controller changed to {self.controller_name}")
+
+        else:
+            self.get_logger().error(f"Error changing controller")
 
     def planner_policy(self):
         """
@@ -388,7 +432,8 @@ class OrchestratorNode(Node):
 
             # 5. Check success
             if result == "STATIC":
-                result = self.act("turn around", point, prev_point)
+                #result = self.act("turn around", point, prev_point)
+                result = self.act("change controller", point, prev_point)
 
             elif result == "TIMEOUT":
                 msg = String()
