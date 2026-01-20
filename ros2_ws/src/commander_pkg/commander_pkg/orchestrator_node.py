@@ -72,7 +72,6 @@ class OrchestratorNode(Node):
         while not self.controller_cli.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('Esperando a que el servicio de controller_server/set_parameters este disponible...')
 
-
         self.navigator = BasicNavigator()
 
         waypoints_path = "./src/commander_pkg/commander_pkg/utils/waypoints.yaml"
@@ -390,6 +389,18 @@ class OrchestratorNode(Node):
             new_planner = random.sample(self.all_planners, 1)[0]
 
         self.planner_name = new_planner
+
+    def controller_policy(self):
+        """
+        Change controller randomly
+        """
+
+        new_controller = self.controller_name
+
+        while new_controller == self.controller_name:
+            new_controller = random.sample(self.all_controllers, 1)[0]
+
+        self.controller_name = new_controller
 
     def navigation_for(self, waypoints):
         """
