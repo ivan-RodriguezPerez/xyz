@@ -1,0 +1,2 @@
+float64 distance_remaining
+float64 timeout_time
