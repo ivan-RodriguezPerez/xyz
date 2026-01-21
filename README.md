@@ -1,15 +1,46 @@
 # Guía de ejecución del proyecto
-
-Este documento describe los pasos necesarios para ejecutar correctamente el proyecto utilizando **Docker**, **WSL2**, **ROS 2** y la simulación de **TurtleBot3**.
+Pasos necesarios para ejecutar correctamente el proyecto utilizando **Docker**, **WSL2**, **ROS 2** y la simulación de **TurtleBot3**.
 
 ---
 
 ## Requisitos previos
 
-* Windows con **WSL2** habilitado
-* **Docker Desktop** instalado y configurado para usar WSL2
-* Python 3 instalado en Windows
-* ROS 2 correctamente configurado dentro del contenedor
+1. Sistema base
+
+Windows con WSL2 habilitado.
+
+Docker Desktop instalado y configurado para usar WSL2.
+
+Python 3 instalado en Windows.
+
+2. ROS2
+
+ROS 2 correctamente configurado dentro del contenedor Docker.
+
+3. Dependencias de Python
+
+En Windows: instalar dependencias usando requirements_win.txt.
+
+Se recomienda crear un entorno virtual para evitar conflictos.
+
+En el contenedor Docker: instalar dependencias usando requirements.txt.
+
+4. Código y contenedor Docker
+
+Clonar el repositorio con la imagen de Docker:
+
+git clone https://github.com/fjrodl/ROS2andGazebo.git
+
+
+Construir la imagen Docker:
+
+cd ROSConES/Docker
+docker build -t ros2roscon .
+
+
+Levantar el contenedor:
+
+docker compose up  
 
 ---
 

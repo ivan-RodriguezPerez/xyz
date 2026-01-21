@@ -1,0 +1,5 @@
+flask
+sounddevice
+scipy
+faster-whisper
+pyttsx3
